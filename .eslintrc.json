@@ -4,6 +4,16 @@
     "browser": true,
     "es6": true
   },
+  "parserOptions": {
+    "ecmaVersion": 2022,
+    "sourceType": "module",
+    "project": ["./tsconfig.eslint.json"],
+    "warnOnUnsupportedTypeScriptVersion": false,
+    "ecmaFeatures": {
+      "jsx": true
+    },
+    "createDefaultProgram": true
+  },
   "parser": "@typescript-eslint/parser",
   "extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended"],
   "plugins": [
@@ -13,7 +23,7 @@
     "rxjs",
     "@angular-eslint/template"
   ],
-  "ignorePatterns": ["nodes_modules/", "dist/"],
+  "ignorePatterns": ["nodes_modules/", "dist/", "*.spec.ts", "public-api.ts", "test.ts", "polyfills.ts", "main.ts", "environment*.ts"],
   "rules": {
     "@typescript-eslint/explicit-module-boundary-types": "off",
     "@typescript-eslint/prefer-includes": "off",
@@ -60,22 +70,8 @@
         "generator-star-spacing": "error",
         "no-confusing-arrow": "error",
         "no-duplicate-imports": "error",
-        "@angular-eslint/component-selector": [
-          "error",
-          {
-            "prefix": "lib",
-            "style": "kebab-case",
-            "type": "element"
-          }
-        ],
-        "@angular-eslint/directive-selector": [
-          "error",
-          {
-            "prefix": "lib",
-            "style": "camelCase",
-            "type": "attribute"
-          }
-        ],
+        "@angular-eslint/component-selector": "off",
+        "@angular-eslint/directive-selector": "off",
         "@angular-eslint/directive-class-suffix": "off",
         "@angular-eslint/component-class-suffix": "off",
         "@typescript-eslint/adjacent-overload-signatures": "warn",

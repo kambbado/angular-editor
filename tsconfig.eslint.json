@@ -7,9 +7,11 @@
   },
   "include": [
     "./src",
-    "./projects/angular-editor-app/src/test.ts"
+    "./projects/angular-editor/src/lib/*.ts",
+    "./projects/angular-editor-app/src/app/*.ts",
   ],
   "exclude": [
+    "*.spec.ts",
     "node_modules",
     "dist",
     "*.json",
@@ -18,6 +20,7 @@
     "**/index.ts",
     "**/test.ts",
     "**/public-api.ts",
-    "**/environment.prod.ts"
+    "**/environment.prod.ts",
+    "*/projects/angular-editor/src/test.ts"
   ]
 }
