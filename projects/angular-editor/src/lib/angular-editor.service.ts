@@ -104,12 +104,12 @@ export class AngularEditorService {
         this.savedSelection = sel.getRangeAt(0);
         this.selectedText = sel.toString();
       }
-    } else if (this.doc.getSelection && this.doc.createRange) {
+    } else if (this.doc.createRange != null && this.doc.getSelection != null) {
       this.savedSelection = document.createRange();
     } else {
       this.savedSelection = null;
     }
-  }
+  };
 
   /**
    * restore selection when the editor is focused in
@@ -123,9 +123,6 @@ export class AngularEditorService {
         sel.removeAllRanges();
         sel.addRange(this.savedSelection);
         return true;
-      } else if (this.doc.getSelection /*&& this.savedSelection.select*/) {
-        // this.savedSelection.select();
-        return true;
       }
     } else {
       return false;
@@ -135,7 +132,7 @@ export class AngularEditorService {
   /**
    * setTimeout used for execute 'saveSelection' method in next event loop iteration
    */
-  public executeInNextQueueIteration(callbackFn: (...args: any[]) => any, timeout = 1e2): void {
+  public executeInNextQueueIteration(callbackFn: (...args: any[]) => any, timeout:any = 1e2): void {
     setTimeout(callbackFn, timeout);
   }
 
@@ -212,7 +209,7 @@ export class AngularEditorService {
   }
 
   private insertVimeoVideoTag(videoUrl: string): void {
-    const sub = this.http.get<any>(`https://vimeo.com/api/oembed.json?url=${videoUrl}`).subscribe(data => {
+    const sub = this.http.get<any>(`https://vimeo.com/api/oembed.json?url=${videoUrl}`).subscribe((data:any) => {
       const imageUrl = data.thumbnail_url_with_play_button;
       const thumbnail = `<div>
         <a href='${videoUrl}' target='_blank'>
@@ -224,7 +221,7 @@ export class AngularEditorService {
     });
   }
 
-  nextNode(node) {
+  nextNode(node: any) {
     if (node.hasChildNodes()) {
       return node.firstChild;
     } else {
@@ -238,7 +235,7 @@ export class AngularEditorService {
     }
   }
 
-  getRangeSelectedNodes(range, includePartiallySelectedContainers) {
+  getRangeSelectedNodes(range: any, includePartiallySelectedContainers: any) {
     let node = range.startContainer;
     const endNode = range.endContainer;
     let rangeNodes = [];
@@ -277,13 +274,13 @@ export class AngularEditorService {
     if (this.doc.getSelection) {
       const sel = this.doc.getSelection();
       for (let i = 0, len = sel.rangeCount; i < len; ++i) {
-        nodes.push.apply(nodes, this.getRangeSelectedNodes(sel.getRangeAt(i), true));
+        nodes.push(...nodes, this.getRangeSelectedNodes(sel.getRangeAt(i), true));
       }
     }
     return nodes;
   }
 
-  replaceWithOwnChildren(el) {
+  replaceWithOwnChildren(el: any) {
     const parent = el.parentNode;
     while (el.hasChildNodes()) {
       parent.insertBefore(el.firstChild, el);
@@ -291,9 +288,9 @@ export class AngularEditorService {
     parent.removeChild(el);
   }
 
-  removeSelectedElements(tagNames) {
+  removeSelectedElements(tagNames: any) {
     const tagNamesArray = tagNames.toLowerCase().split(',');
-    this.getSelectedNodes().forEach((node) => {
+    this.getSelectedNodes().forEach((node: any) => {
       if (node.nodeType === 1 &&
         tagNamesArray.indexOf(node.tagName.toLowerCase()) > -1) {
         // Remove the node and replace it with its children

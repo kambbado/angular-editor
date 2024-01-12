@@ -1,0 +1,23 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "composite": true,
+    "declaration": true
+  },
+  "include": [
+    "./src",
+    "./projects/angular-editor-app/src/test.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "*.json",
+    "**/*.ngfactory.ts",
+    "**/*.shim.ts",
+    "**/index.ts",
+    "**/test.ts",
+    "**/public-api.ts",
+    "**/environment.prod.ts"
+  ]
+}

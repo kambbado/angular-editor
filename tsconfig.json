@@ -1,29 +1,82 @@
 {
+  "$schema": "http://json.schemastore.org/tsconfig",
   "compileOnSave": false,
   "compilerOptions": {
+    "composite": false,
+    "noFallthroughCasesInSwitch": true,
+    "pretty": true,
+    "rootDir": ".",
     "baseUrl": "./",
     "outDir": "./dist/out-tsc",
     "sourceMap": true,
     "declaration": false,
-    "module": "es2022",
     "moduleResolution": "node",
+    "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "importHelpers": true,
+    "preserveSymlinks": true,
+    "skipLibCheck": true,
     "target": "es2022",
-    "typeRoots": [
-      "node_modules/@types"
-    ],
-    "lib": [
-      "es2022",
-      "dom"
-    ],
+    "module": "es2022",
+    "typeRoots": ["node_modules/@types"],
+    "lib": ["es2022", "dom"],
+    "resolveJsonModule": true,
+    "preserveConstEnums": true,
+    "incremental": true,
     "paths": {
-      "angular-editor": [
-        "dist/angular-editor"
-      ],
-      "angular-editor/*": [
-        "dist/angular-editor/*"
-      ]
+      "angular-editor": ["./projects/angular-editor/src/public-api.ts"]
     }
-  }
+  },
+  "include": ["src", "projects"],
+  "exclude": [
+    "**/*.spec.ts",
+    "./node_modules/*",
+    "dist",
+    "**/*.ngfactory.ts",
+    "**/*.shim.ts",
+    "**/index.ts",
+    "**/test.ts",
+    "**/public-api.ts",
+    "**/environment.prod.ts"
+  ],
+  "angularCompilerOptions": {
+    "disableTypeScriptVersionCheck": true,
+    "annotateForClosureCompiler": true,
+    "strictTemplates": true,
+    "strictInputTypes": true,
+    "strictNullInputTypes": true,
+    "strictAttributeTypes": true,
+    "strictSafeNavigationTypes": true,
+    "strictDomLocalRefTypes": true,
+    "strictOutputEventTypes": true,
+    "strictDomEventTypes": true,
+    "strictContextGenerics": true,
+    "strictLiteralTypes": true,
+    "allowEmptyCodegenFiles": true,
+    "genDir": "../../dist",
+    "isolatedModules": false,
+    "fullTemplateTypeCheck": true,
+    "strictInjectionParameters": true,
+    "enableI18nLegacyMessageIdFormat": false,
+    "strictInputAccessModifiers": true,
+    "extendedDiagnostics": {
+      "checks": {
+        "invalidBananaInBox": "error",
+        "nullishCoalescingNotNullable": "warning"
+      },
+      "defaultCategory": "error"
+    },
+    "esModuleInterop": true
+  },
+  "references": [
+    {
+      "path": "./tsconfig.eslint.json"
+    },
+    {
+      "path": "./projects/angular-editor/tsconfig.eslint.json"
+    },
+    {
+      "path": "./projects/angular-editor-app/tsconfig.eslint.json"
+    }
+  ]
 }
