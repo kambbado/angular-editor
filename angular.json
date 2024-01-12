@@ -155,18 +155,6 @@
               "projects/angular-editor-app/**/*.html"
             ]
           }
-        },
-        "e2e": {
-          "builder": "@angular-devkit/build-angular:protractor",
-          "options": {
-            "protractorConfig": "projects/angular-editor-app/e2e/protractor.conf.js",
-            "devServerTarget": "angular-editor-app:serve"
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "angular-editor-app:serve:production"
-            }
-          }
         }
       }
     }
@@ -176,5 +164,13 @@
     "schematicCollections": [
       "@angular-eslint/schematics"
     ]
+  },
+  "schematics": {
+    "@angular-eslint/schematics:application": {
+      "setParserOptionsProject": true
+    },
+    "@angular-eslint/schematics:library": {
+      "setParserOptionsProject": true
+    }
   }
 }
