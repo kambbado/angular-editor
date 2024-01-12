@@ -1,0 +1,49 @@
+{
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "name": "angular-editor",
+  "projectType": "library",
+  "sourceRoot": "projects/angular-editor/src",
+  "prefix": "lib",
+  "generators": {
+    "@schematics/angular:component": {
+      "style": "scss"
+    }
+  },
+  "targets": {
+    "build": {
+      "executor": "@angular-devkit/build-angular:ng-packagr",
+      "options": {
+        "tsConfig": "projects/angular-editor/tsconfig.lib.json",
+        "project": "projects/angular-editor/ng-package.json"
+      },
+      "configurations": {
+        "production": {
+          "tsConfig": "projects/angular-editor/tsconfig.lib.prod.json"
+        }
+      },
+      "outputs": [
+        "{workspaceRoot}/dist/angular-editor"
+      ]
+    },
+    "test": {
+      "executor": "@angular-devkit/build-angular:karma",
+      "options": {
+        "main": "projects/angular-editor/src/test.ts",
+        "tsConfig": "projects/angular-editor/tsconfig.spec.json",
+        "karmaConfig": "projects/angular-editor/karma.conf.js"
+      }
+    },
+    "lint": {
+      "executor": "@angular-eslint/builder:lint",
+      "options": {
+        "lintFilePatterns": [
+          "projects/angular-editor/**/*.ts",
+          "projects/angular-editor/**/*.html"
+        ]
+      },
+      "outputs": [
+        "{options.outputFile}"
+      ]
+    }
+  }
+}

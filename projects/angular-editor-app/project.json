@@ -1,0 +1,123 @@
+{
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "name": "angular-editor-app",
+  "projectType": "application",
+  "generators": {
+    "@schematics/angular:component": {
+      "style": "scss"
+    }
+  },
+  "sourceRoot": "projects/angular-editor-app/src",
+  "prefix": "app",
+  "targets": {
+    "build": {
+      "executor": "@angular-devkit/build-angular:browser",
+      "options": {
+        "outputPath": "dist/angular-editor-app",
+        "index": "projects/angular-editor-app/src/index.html",
+        "main": "projects/angular-editor-app/src/main.ts",
+        "polyfills": "projects/angular-editor-app/src/polyfills.ts",
+        "tsConfig": "projects/angular-editor-app/tsconfig.app.json",
+        "assets": [
+          "projects/angular-editor-app/src/favicon.ico",
+          "projects/angular-editor-app/src/assets",
+          {
+            "glob": "**/*",
+            "input": "node_modules/font-awesome/fonts",
+            "output": "assets/fonts/"
+          }
+        ],
+        "styles": [
+          "projects/angular-editor-app/src/styles.scss"
+        ],
+        "stylePreprocessorOptions": {
+          "includePaths": []
+        },
+        "scripts": [],
+        "vendorChunk": true,
+        "extractLicenses": false,
+        "buildOptimizer": false,
+        "sourceMap": true,
+        "optimization": false,
+        "namedChunks": true
+      },
+      "configurations": {
+        "production": {
+          "fileReplacements": [
+            {
+              "replace": "projects/angular-editor-app/src/environments/environment.ts",
+              "with": "projects/angular-editor-app/src/environments/environment.prod.ts"
+            }
+          ],
+          "optimization": true,
+          "outputHashing": "all",
+          "sourceMap": false,
+          "namedChunks": false,
+          "extractLicenses": true,
+          "vendorChunk": false,
+          "buildOptimizer": true,
+          "budgets": [
+            {
+              "type": "initial",
+              "maximumWarning": "2mb",
+              "maximumError": "5mb"
+            },
+            {
+              "type": "anyComponentStyle",
+              "maximumWarning": "6kb"
+            }
+          ]
+        }
+      },
+      "outputs": [
+        "{options.outputPath}"
+      ]
+    },
+    "serve": {
+      "executor": "@angular-devkit/build-angular:dev-server",
+      "options": {
+        "buildTarget": "angular-editor-app:build"
+      },
+      "configurations": {
+        "production": {
+          "buildTarget": "angular-editor-app:build:production"
+        }
+      }
+    },
+    "extract-i18n": {
+      "executor": "@angular-devkit/build-angular:extract-i18n",
+      "options": {
+        "buildTarget": "angular-editor-app:build"
+      }
+    },
+    "test": {
+      "executor": "@angular-devkit/build-angular:karma",
+      "options": {
+        "main": "projects/angular-editor-app/src/test.ts",
+        "polyfills": "projects/angular-editor-app/src/polyfills.ts",
+        "tsConfig": "projects/angular-editor-app/tsconfig.spec.json",
+        "karmaConfig": "projects/angular-editor-app/karma.conf.js",
+        "assets": [
+          "projects/angular-editor-app/src/favicon.ico",
+          "projects/angular-editor-app/src/assets"
+        ],
+        "styles": [
+          "projects/angular-editor-app/src/styles.css"
+        ],
+        "scripts": []
+      }
+    },
+    "lint": {
+      "executor": "@angular-eslint/builder:lint",
+      "options": {
+        "lintFilePatterns": [
+          "projects/angular-editor-app/**/*.ts",
+          "projects/angular-editor-app/**/*.html"
+        ]
+      },
+      "outputs": [
+        "{options.outputFile}"
+      ]
+    }
+  }
+}

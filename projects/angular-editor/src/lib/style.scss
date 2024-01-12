@@ -1,7 +1,12 @@
 // $fa-font-path: "assets/fonts" !default;
 // @import "font-awesome/scss/font-awesome.scss";
 //$fa-font-path: 'font-awesome/fonts' !default;
-@import 'font-awesome/scss/font-awesome';
+//@import 'font-awesome/scss/font-awesome';
+$fa-font-path: "../../assets" !default;
+
+@import "@fortawesome/fontawesome-free/scss/fontawesome.scss";
+@import "@fortawesome/fontawesome-free/scss/regular.scss";
+@import "@fortawesome/fontawesome-free/scss/solid.scss";
 
 a {
   cursor: pointer;
