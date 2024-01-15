@@ -6,6 +6,7 @@
     "declaration": true
   },
   "include": [
-    "lib"
-  ]
+    "./src"
+  ],
+  "exclude": ["**/node_modules", "**/.*/", "**/dist", "*.json", "**/test.ts", "**/*.specs.ts"]
 }

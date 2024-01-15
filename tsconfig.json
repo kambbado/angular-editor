@@ -31,13 +31,7 @@
   "exclude": [
     "**/*.spec.ts",
     "./node_modules/*",
-    "dist",
-    "**/*.ngfactory.ts",
-    "**/*.shim.ts",
-    "**/index.ts",
-    "**/test.ts",
-    "**/public-api.ts",
-    "**/environment.prod.ts"
+    "dist"
   ],
   "angularCompilerOptions": {
     "disableTypeScriptVersionCheck": true,

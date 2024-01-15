@@ -5,22 +5,6 @@
     "composite": true,
     "declaration": true
   },
-  "include": [
-    "./src",
-    "./projects/angular-editor/src/lib/*.ts",
-    "./projects/angular-editor-app/src/app/*.ts",
-  ],
-  "exclude": [
-    "*.spec.ts",
-    "node_modules",
-    "dist",
-    "*.json",
-    "**/*.ngfactory.ts",
-    "**/*.shim.ts",
-    "**/index.ts",
-    "**/test.ts",
-    "**/public-api.ts",
-    "**/environment.prod.ts",
-    "*/projects/angular-editor/src/test.ts"
-  ]
+  "include": ["./src", "./projects"],
+  "exclude": ["**/node_modules", "**/.*/", "**/dist", "*.json", "**/test.ts", "**/*.specs.ts"]
 }

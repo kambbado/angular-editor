@@ -1,6 +1,6 @@
 {
-  "name": "@kambbado/angular-editor",
-  "version": "3.0.0-beta.1.17",
+  "name": "@ramp/angular-editor",
+  "version": "3.0.0-beta.5",
   "description": "A simple native WYSIWYG editor for Angular 17+. Rich Text editor component for Angular.",
   "author": "Andrey Kolkov <a.kolkov@gmail.com>",
   "repository": "https://github.com/kolkov/angular-editor",
