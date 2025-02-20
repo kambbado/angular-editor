@@ -70,13 +70,13 @@
               "projects/angular-editor-app/src/assets",
               {
                 "glob": "**/*",
-                "input": "node_modules/font-awesome/fonts",
-                "output": "assets/fonts/"
+                "input": "projects/angular-editor/assets/icons/",
+                "output": "assets/ae-icons/"
               }
             ],
-            "styles": ["projects/angular-editor-app/src/styles.scss"],
-            "stylePreprocessorOptions": {
-              "includePaths": []
+            "styles": [
+              "projects/angular-editor-app/src/styles.scss",
+              "projects/angular-editor/themes/default.scss"
             },
             "scripts": [],
             "vendorChunk": true,

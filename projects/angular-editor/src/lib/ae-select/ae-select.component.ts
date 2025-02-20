@@ -10,10 +10,10 @@ import {
   Output,
   Renderer2,
   ViewChild,
-  ViewEncapsulation,
-} from "@angular/core";
-import { ControlValueAccessor, NG_VALUE_ACCESSOR } from "@angular/forms";
-import { isDefined } from "../utils";
+  ViewEncapsulation
+} from '@angular/core';
+import {ControlValueAccessor, NG_VALUE_ACCESSOR} from '@angular/forms';
+import {isDefined} from '../utils';
 
 export interface SelectOption {
   label: string;
@@ -21,31 +21,29 @@ export interface SelectOption {
 }
 
 @Component({
-  selector: "ae-select",
-  templateUrl: "./ae-select.component.html",
-  styleUrls: ["./ae-select.component.scss"],
-  encapsulation: ViewEncapsulation.None,
+  selector: 'ae-select',
+  templateUrl: './ae-select.component.html',
+  styleUrls: ['./ae-select.component.scss'],
+  //encapsulation: ViewEncapsulation.None,
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
       useExisting: forwardRef(() => AeSelectComponent),
       multi: true,
-    },
-  ],
+    }
+  ]
 })
 export class AeSelectComponent implements OnInit, ControlValueAccessor {
   @Input() options: SelectOption[] = [];
   // eslint-disable-next-line @angular-eslint/no-input-rename
-  @Input("hidden") isHidden: boolean;
+  @Input('hidden') isHidden: boolean;
 
   selectedOption: SelectOption;
   disabled = false;
   optionId = 0;
 
   get label(): string {
-    return this.selectedOption?.hasOwnProperty("label")
-      ? this.selectedOption.label
-      : "Select";
+    return this.selectedOption && this.selectedOption.hasOwnProperty('label') ? this.selectedOption.label : 'Select';
   }
 
   opened = false;
@@ -54,14 +52,17 @@ export class AeSelectComponent implements OnInit, ControlValueAccessor {
     return this.selectedOption.value;
   }
 
-  @HostBinding("style.display") hidden = "inline-block";
+  @HostBinding('style.display') hidden = 'inline-block';
 
   // eslint-disable-next-line @angular-eslint/no-output-native, @angular-eslint/no-output-rename
-  @Output("change") changeEvent = new EventEmitter();
+  @Output('change') changeEvent = new EventEmitter();
 
-  @ViewChild("labelButton", { static: true }) labelButton: ElementRef;
+  @ViewChild('labelButton', {static: true}) labelButton: ElementRef;
 
-  constructor(private elRef: ElementRef, private r: Renderer2) {}
+  constructor(private elRef: ElementRef,
+              private r: Renderer2,
+  ) {
+  }
 
   ngOnInit() {
     this.selectedOption = this.options[0];
@@ -71,10 +72,15 @@ export class AeSelectComponent implements OnInit, ControlValueAccessor {
   }
 
   hide() {
-    this.hidden = "none";
+    this.hidden = 'none';
   }
 
   optionSelect(option: SelectOption, event: MouseEvent) {
+    //console.log(event.button, event.buttons);
+    if (event.buttons !== 1) {
+      return;
+    }
+    event.preventDefault();
     event.stopPropagation();
     this.setValue(option.value);
     this.onChange(this.selectedOption.value);
@@ -91,7 +97,7 @@ export class AeSelectComponent implements OnInit, ControlValueAccessor {
     this.opened = !this.opened;
   }
 
-  @HostListener("document:click", ["$event"])
+  @HostListener('document:click', ['$event'])
   onClick($event: MouseEvent) {
     if (!this.elRef.nativeElement.contains($event.target)) {
       this.close();
@@ -106,16 +112,16 @@ export class AeSelectComponent implements OnInit, ControlValueAccessor {
     return this.opened;
   }
 
-  writeValue(value: any) {
-    if (!value || typeof value !== "string") {
+  writeValue(value) {
+    if (!value || typeof value !== 'string') {
       return;
     }
     this.setValue(value);
   }
 
-  setValue(value: any) {
+  setValue(value) {
     let index = 0;
-    const selectedEl = this.options.find((el: any, i: any) => {
+    const selectedEl = this.options.find((el, i) => {
       index = i;
       return el.value === value;
     });
@@ -125,26 +131,28 @@ export class AeSelectComponent implements OnInit, ControlValueAccessor {
     }
   }
 
-  onChange: any = () => {};
-  onTouched: any = () => {};
+  onChange: any = () => {
+  }
+  onTouched: any = () => {
+  }
 
-  registerOnChange(fn: any) {
+  registerOnChange(fn) {
     this.onChange = fn;
   }
 
-  registerOnTouched(fn: any) {
+  registerOnTouched(fn) {
     this.onTouched = fn;
   }
 
   setDisabledState(isDisabled: boolean): void {
     this.labelButton.nativeElement.disabled = isDisabled;
     const div = this.labelButton.nativeElement;
-    const action = isDisabled ? "addClass" : "removeClass";
-    this.r[action](div, "disabled");
+    const action = isDisabled ? 'addClass' : 'removeClass';
+    this.r[action](div, 'disabled');
     this.disabled = isDisabled;
   }
 
-  @HostListener("keydown", ["$event"])
+  @HostListener('keydown', ['$event'])
   handleKeyDown($event: KeyboardEvent) {
     if (!this.opened) {
       return;
@@ -152,26 +160,26 @@ export class AeSelectComponent implements OnInit, ControlValueAccessor {
     // console.log($event.key);
     // if (KeyCode[$event.key]) {
     switch ($event.key) {
-      case "ArrowDown":
+      case 'ArrowDown':
         this._handleArrowDown($event);
         break;
-      case "ArrowUp":
+      case 'ArrowUp':
         this._handleArrowUp($event);
         break;
-      case "Space":
+      case 'Space':
         this._handleSpace($event);
         break;
-      case "Enter":
+      case 'Enter':
         this._handleEnter($event);
         break;
-      case "Tab":
+      case 'Tab':
         this._handleTab($event);
         break;
-      case "Escape":
+      case 'Escape':
         this.close();
         $event.preventDefault();
         break;
-      case "Backspace":
+      case 'Backspace':
         this._handleBackspace();
         break;
     }
@@ -180,31 +188,31 @@ export class AeSelectComponent implements OnInit, ControlValueAccessor {
     // }
   }
 
-  _handleArrowDown($event: any) {
+  _handleArrowDown($event) {
     if (this.optionId < this.options.length - 1) {
       this.optionId++;
     }
   }
 
-  _handleArrowUp($event: any) {
+  _handleArrowUp($event) {
     if (this.optionId >= 1) {
       this.optionId--;
     }
   }
 
-  _handleSpace($event: any): any {
-    // empty
+  _handleSpace($event) {
+
   }
 
-  _handleEnter($event: any) {
+  _handleEnter($event) {
     this.optionSelect(this.options[this.optionId], $event);
   }
 
-  _handleTab($event: any) {
-    // empty
+  _handleTab($event) {
+
   }
 
   _handleBackspace() {
-    // empty
+
   }
 }

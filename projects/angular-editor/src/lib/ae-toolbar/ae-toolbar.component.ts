@@ -1,5 +1,3 @@
-import { DOCUMENT } from '@angular/common';
-import { HttpEvent, HttpResponse } from '@angular/common/http';
 import {
   Component,
   ElementRef,
@@ -8,20 +6,24 @@ import {
   Input,
   Output,
   Renderer2,
-  ViewChild
+  ViewChild,
+  ViewEncapsulation
 } from '@angular/core';
-import { Observable } from 'rxjs';
-import { SelectOption } from './ae-select/ae-select.component';
-import { AngularEditorService, UploadResponse } from './angular-editor.service';
-import { CustomClass } from './config';
+import {AngularEditorService, UploadResponse} from '../angular-editor.service';
+import {HttpEvent, HttpResponse} from '@angular/common/http';
+import {DOCUMENT} from '@angular/common';
+import {CustomClass} from '../config';
+import {SelectOption} from '../ae-select/ae-select.component';
+import {Observable} from 'rxjs';
 
 @Component({
-  selector: 'angular-editor-toolbar',
-  templateUrl: './angular-editor-toolbar.component.html',
-  styleUrls: ['./angular-editor-toolbar.component.scss'],
+  selector: 'angular-editor-toolbar, ae-toolbar, div[aeToolbar]',
+  templateUrl: './ae-toolbar.component.html',
+  styleUrls: ['./ae-toolbar.component.scss'],
+  //encapsulation: ViewEncapsulation.None,
 })
 
-export class AngularEditorToolbarComponent {
+export class AeToolbarComponent {
   htmlMode = false;
   linkSelected = false;
   block = 'default';
@@ -54,10 +56,6 @@ export class AngularEditorToolbarComponent {
     {
       label: 'Heading 6',
       value: 'h6',
-    },
-    {
-      label: 'Heading 7',
-      value: 'h7',
     },
     {
       label: 'Paragraph',
@@ -134,7 +132,7 @@ export class AngularEditorToolbarComponent {
   set customClasses(classes: CustomClass[]) {
     if (classes) {
       this._customClasses = classes;
-      this.customClassList = this._customClasses.map((x:any, i:any) => ({label: x.name, value: i.toString()}));
+      this.customClassList = this._customClasses.map((x, i) => ({label: x.name, value: i.toString()}));
       this.customClassList.unshift({label: 'Clear Class', value: '-1'});
     }
   }
@@ -160,7 +158,7 @@ export class AngularEditorToolbarComponent {
   @ViewChild('fileInput', {static: true}) myInputFile: ElementRef;
 
   public get isLinkButtonDisabled(): boolean {
-    return this.htmlMode || !this.editorService.selectedText;
+    return this.htmlMode || !Boolean(this.editorService.selectedText);
   }
 
   constructor(
@@ -186,7 +184,7 @@ export class AngularEditorToolbarComponent {
     if (!this.showToolbar) {
       return;
     }
-    this.buttons.forEach((e:any) => {
+    this.buttons.forEach(e => {
       const result = this.doc.queryCommandState(e);
       const elementById = this.doc.getElementById(e + '-' + this.id);
       if (result) {
@@ -204,10 +202,10 @@ export class AngularEditorToolbarComponent {
     if (!this.showToolbar) {
       return;
     }
-    this.linkSelected = nodes.findIndex((x:any) => x.nodeName === 'A') > -1;
+    this.linkSelected = nodes.findIndex(x => x.nodeName === 'A') > -1;
     let found = false;
-    this.select.forEach((y:any) => {
-      const node = nodes.find((x:any) => x.nodeName === y);
+    this.select.forEach(y => {
+      const node = nodes.find(x => x.nodeName === y);
       if (node !== undefined && y === node.nodeName) {
         if (found === false) {
           this.block = node.nodeName.toLowerCase();
@@ -220,8 +218,8 @@ export class AngularEditorToolbarComponent {
 
     found = false;
     if (this._customClasses) {
-      this._customClasses.forEach((y:any, index:any) => {
-        const node = nodes.find((x:any) => {
+      this._customClasses.forEach((y, index) => {
+        const node = nodes.find(x => {
           if (x instanceof Element) {
             return x.className === y.class;
           }
@@ -237,9 +235,9 @@ export class AngularEditorToolbarComponent {
       });
     }
 
-    Object.keys(this.tagMap).forEach((e:any) => {
+    Object.keys(this.tagMap).map(e => {
       const elementById = this.doc.getElementById(this.tagMap[e] + '-' + this.id);
-      const node = nodes.find((x:any) => x.nodeName === e);
+      const node = nodes.find(x => x.nodeName === e);
       if (node !== undefined && e === node.nodeName) {
         this.r.addClass(elementById, 'active');
       } else {
@@ -323,26 +321,26 @@ export class AngularEditorToolbarComponent {
   /**
    * Upload image when file is selected.
    */
-  onFileChanged(event: any) {
+  onFileChanged(event) {
     const file = event.target.files[0];
     if (file.type.includes('image/')) {
-        if (this.upload) {
-          this.upload(file).subscribe((response: HttpResponse<UploadResponse>) => this.watchUploadImage(response, event));
-        } else if (this.uploadUrl) {
-            this.editorService.uploadImage(file).subscribe((response: HttpResponse<UploadResponse>) => this.watchUploadImage(response, event));
-        } else {
-          const reader = new FileReader();
-          reader.onload = (e: ProgressEvent) => {
-            const fr:FileReader = e.currentTarget as FileReader;
-            this.editorService.insertImage(fr.result.toString());
-          };
-          reader.readAsDataURL(file);
-        }
+      if (this.upload) {
+        this.upload(file).subscribe((response: HttpResponse<UploadResponse>) => this.watchUploadImage(response, event));
+      } else if (this.uploadUrl) {
+        this.editorService.uploadImage(file).subscribe((response: HttpResponse<UploadResponse>) => this.watchUploadImage(response, event));
+      } else {
+        const reader = new FileReader();
+        reader.onload = (e: ProgressEvent) => {
+          const fr = e.currentTarget as FileReader;
+          this.editorService.insertImage(fr.result.toString());
+        };
+        reader.readAsDataURL(file);
       }
+    }
   }
 
-  watchUploadImage(response: HttpResponse<{imageUrl: string}>, event:any) {
-    const { imageUrl } = response.body;
+  watchUploadImage(response: HttpResponse<{ imageUrl: string }>, event) {
+    const {imageUrl} = response.body;
     this.editorService.insertImage(imageUrl);
     event.srcElement.value = null;
   }
@@ -368,7 +366,7 @@ export class AngularEditorToolbarComponent {
     let result: any;
     for (const arr of this.hiddenButtons) {
       if (arr instanceof Array) {
-        result = arr.find((item:any) => item === name);
+        result = arr.find(item => item === name);
       }
       if (result) {
         break;

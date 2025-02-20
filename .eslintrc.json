@@ -155,6 +155,7 @@
           }
         ],
         "@typescript-eslint/type-annotation-spacing": "off",
+        "@angular-eslint/no-host-metadata-property": "warn"
         "@typescript-eslint/unified-signatures": "error",
         "@typescript-eslint/explicit-function-return-type": "off",
         "@typescript-eslint/await-thenable": "off",

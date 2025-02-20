@@ -1,6 +1,7 @@
 import { NgModule } from "@angular/core";
 import { AngularEditorComponent } from "./angular-editor.component";
 import { AngularEditorToolbarComponent } from "./angular-editor-toolbar.component";
+import {AeToolbarComponent} from './ae-toolbar/ae-toolbar.component';
 import { FormsModule, ReactiveFormsModule } from "@angular/forms";
 import { CommonModule } from "@angular/common";
 import { AeSelectComponent } from "./ae-select/ae-select.component";
@@ -17,12 +18,14 @@ import { faAlignCenter, faAlignJustify, faAlignLeft, faAlignRight, faBold, faCod
     AeSelectComponent,
     AeButtonComponent,
     AeToolbarSetComponent,
+    AeToolbarComponent
   ],
   exports: [
     AngularEditorComponent,
     AngularEditorToolbarComponent,
     AeButtonComponent,
     AeToolbarSetComponent,
+    AeToolbarComponent
   ],
 })
 export class AngularEditorModule {

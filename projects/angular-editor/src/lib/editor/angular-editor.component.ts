@@ -1,4 +1,4 @@
-import { DOCUMENT } from "@angular/common";
+import {DOCUMENT} from '@angular/common';
 import {
   AfterViewInit,
   Attribute,
@@ -18,31 +18,31 @@ import {
   Renderer2,
   SecurityContext,
   TemplateRef,
-  ViewChild,
-} from "@angular/core";
-import { ControlValueAccessor, NG_VALUE_ACCESSOR } from "@angular/forms";
-import { DomSanitizer } from "@angular/platform-browser";
-import { AngularEditorToolbarComponent } from "./angular-editor-toolbar.component";
-import { AngularEditorService } from "./angular-editor.service";
-import { AngularEditorConfig, angularEditorConfig } from "./config";
-import { isDefined } from "./utils";
+  ViewChild, ViewEncapsulation
+} from '@angular/core';
+import {ControlValueAccessor, NG_VALUE_ACCESSOR} from '@angular/forms';
+import {DomSanitizer} from '@angular/platform-browser';
+import {AeToolbarComponent} from '../ae-toolbar/ae-toolbar.component';
+import {AngularEditorService} from '../angular-editor.service';
+import {AngularEditorConfig, angularEditorConfig} from '../config';
+import {isDefined} from '../utils';
 
 @Component({
-  selector: "angular-editor",
-  templateUrl: "./angular-editor.component.html",
-  styleUrls: ["./angular-editor.component.scss"],
+  selector: 'angular-editor',
+  templateUrl: './angular-editor.component.html',
+  styleUrls: ['./angular-editor.component.scss'],
+  encapsulation: ViewEncapsulation.None,
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
       useExisting: forwardRef(() => AngularEditorComponent),
-      multi: true,
+      multi: true
     },
-    AngularEditorService,
-  ],
+    AngularEditorService
+  ]
 })
-export class AngularEditorComponent
-  implements OnInit, ControlValueAccessor, AfterViewInit, OnDestroy
-{
+export class AngularEditorComponent implements OnInit, ControlValueAccessor, AfterViewInit, OnDestroy {
+
   private onChange: (value: string) => void;
   private onTouched: () => void;
 
@@ -56,34 +56,32 @@ export class AngularEditorComponent
   focusInstance: any;
   blurInstance: any;
 
-  @Input() id = "";
+  @Input() id = '';
   @Input() config: AngularEditorConfig = angularEditorConfig;
-  @Input() placeholder = "";
+  @Input() placeholder = '';
   @Input() tabIndex: number | null;
 
   @Output() html;
 
-  @ViewChild("editor", { static: true }) textArea: ElementRef;
-  @ViewChild("editorWrapper", { static: true }) editorWrapper: ElementRef;
-  @ViewChild("editorToolbar") editorToolbar: AngularEditorToolbarComponent;
+  @ViewChild('editor', {static: true}) textArea: ElementRef;
+  @ViewChild('editorWrapper', {static: true}) editorWrapper: ElementRef;
+  @ViewChild('editorToolbar') editorToolbar: AeToolbarComponent;
   @ContentChild("customButtons") customButtonsTemplateRef?: TemplateRef<any>;
   executeCommandFn = this.executeCommand.bind(this);
 
   @Output() viewMode = new EventEmitter<boolean>();
 
   /** emits `blur` event when focused out from the textarea */
-  // eslint-disable-next-line @angular-eslint/no-output-native, @angular-eslint/no-output-rename
-  @Output("blur") blurEvent: EventEmitter<FocusEvent> =
-    new EventEmitter<FocusEvent>();
+    // eslint-disable-next-line @angular-eslint/no-output-native, @angular-eslint/no-output-rename
+  @Output('blur') blurEvent: EventEmitter<FocusEvent> = new EventEmitter<FocusEvent>();
 
   /** emits `focus` event when focused in to the textarea */
-  // eslint-disable-next-line @angular-eslint/no-output-rename, @angular-eslint/no-output-native
-  @Output("focus") focusEvent: EventEmitter<FocusEvent> =
-    new EventEmitter<FocusEvent>();
+    // eslint-disable-next-line @angular-eslint/no-output-rename, @angular-eslint/no-output-native
+  @Output('focus') focusEvent: EventEmitter<FocusEvent> = new EventEmitter<FocusEvent>();
 
-  @HostBinding("attr.tabindex") tabindex = -1;
+  @HostBinding('attr.tabindex') tabindex = -1;
 
-  @HostListener("focus")
+  @HostListener('focus')
   onFocus() {
     this.focus();
   }
@@ -94,18 +92,15 @@ export class AngularEditorComponent
     @Inject(DOCUMENT) private doc: any,
     private sanitizer: DomSanitizer,
     private cdRef: ChangeDetectorRef,
-    @Attribute("tabindex") defaultTabIndex: string,
-    @Attribute("autofocus") private autoFocus: any
+    @Attribute('tabindex') defaultTabIndex: string,
+    @Attribute('autofocus') private autoFocus: any
   ) {
     const parsedTabIndex = Number(defaultTabIndex);
-    this.tabIndex =
-      parsedTabIndex || parsedTabIndex === 0 ? parsedTabIndex : null;
+    this.tabIndex = (parsedTabIndex || parsedTabIndex === 0) ? parsedTabIndex : null;
   }
 
   ngOnInit() {
-    this.config.toolbarPosition = this.config.toolbarPosition
-      ? this.config.toolbarPosition
-      : angularEditorConfig.toolbarPosition;
+    this.config.toolbarPosition = this.config.toolbarPosition ? this.config.toolbarPosition : angularEditorConfig.toolbarPosition;
   }
 
   ngAfterViewInit() {
@@ -117,8 +112,8 @@ export class AngularEditorComponent
   onPaste(event: ClipboardEvent) {
     if (this.config.rawPaste) {
       event.preventDefault();
-      const text = event.clipboardData.getData("text/plain");
-      document.execCommand("insertHTML", false, text);
+      const text = event.clipboardData.getData('text/plain');
+      document.execCommand('insertHTML', false, text);
       return text;
     }
   }
@@ -130,17 +125,17 @@ export class AngularEditorComponent
    */
   executeCommand(command: string, value?: string) {
     this.focus();
-    if (command === "focus") {
+    if (command === 'focus') {
       return;
     }
-    if (command === "toggleEditorMode") {
+    if (command === 'toggleEditorMode') {
       this.toggleEditorMode(this.modeVisual);
-    } else if (command !== "") {
-      if (command === "clear") {
+    } else if (command !== '') {
+      if (command === 'clear') {
         this.editorService.removeSelectedElements(this.getCustomTags());
         this.onContentChange(this.textArea.nativeElement);
-      } else if (command === "default") {
-        this.editorService.removeSelectedElements("h1,h2,h3,h4,h5,h6,p,pre");
+      } else if (command === 'default') {
+        this.editorService.removeSelectedElements('h1,h2,h3,h4,h5,h6,p,pre');
         this.onContentChange(this.textArea.nativeElement);
       } else {
         this.editorService.executeCommand(command, value);
@@ -181,20 +176,15 @@ export class AngularEditorComponent
     /**
      * save selection if focussed out
      */
-    this.editorService.executeInNextQueueIteration(
-      this.editorService.saveSelection
-    );
+    this.editorService.executeInNextQueueIteration(this.editorService.saveSelection);
 
-    if (typeof this.onTouched === "function") {
+    if (typeof this.onTouched === 'function') {
       this.onTouched();
     }
 
     if (event.relatedTarget !== null) {
       const parent = (event.relatedTarget as HTMLElement).parentElement;
-      if (
-        !parent.classList.contains("angular-editor-toolbar-set") &&
-        !parent.classList.contains("ae-picker")
-      ) {
+      if (!parent.classList.contains('angular-editor-toolbar-set') && !parent.classList.contains('ae-picker')) {
         this.blurEvent.emit(event);
         this.focused = false;
       }
@@ -208,34 +198,30 @@ export class AngularEditorComponent
     if (this.modeVisual) {
       this.textArea.nativeElement.focus();
     } else {
-      const sourceText = this.doc.getElementById("sourceText" + this.id);
+      const sourceText = this.doc.getElementById('sourceText' + this.id);
       sourceText.focus();
       this.focused = true;
     }
   }
 
   /**
-   * Executed from the content editable section while the input property changes
-   * @param element html element from content editable
+   * Executed from the contenteditable section while the input property changes
+   * @param element html element from contenteditable
    */
-  onContentChange(event: Event): void {
-    const element = event.target as HTMLElement;
-    let html = "";
+  onContentChange(element: HTMLElement): void {
+    let html = '';
     if (this.modeVisual) {
       html = element.innerHTML;
     } else {
       html = element.innerText;
     }
-    if (!html || html === "<br>") {
-      html = "";
+    if ((!html || html === '<br>')) {
+      html = '';
     }
-    if (typeof this.onChange === "function") {
-      this.onChange(
-        this.config.sanitize || this.config.sanitize === undefined
-          ? this.sanitizer.sanitize(SecurityContext.HTML, html)
-          : html
-      );
-      if (!html !== this.showPlaceholder) {
+    if (typeof this.onChange === 'function') {
+      this.onChange(this.config.sanitize || this.config.sanitize === undefined ?
+        this.sanitizer.sanitize(SecurityContext.HTML, html) : html);
+      if ((!html) !== this.showPlaceholder) {
         this.togglePlaceholder(this.showPlaceholder);
       }
     }
@@ -249,7 +235,7 @@ export class AngularEditorComponent
    * @param fn a function
    */
   registerOnChange(fn: any): void {
-    this.onChange = (e: any) => (e === "<br>" ? fn("") : fn(e));
+    this.onChange = e => (e === '<br>' ? fn('') : fn(e));
   }
 
   /**
@@ -265,14 +251,15 @@ export class AngularEditorComponent
   /**
    * Write a new value to the element.
    *
-   * @param value value to be executed when there is a change in content editable
+   * @param value value to be executed when there is a change in contenteditable
    */
   writeValue(value: any): void {
-    if ((!value || value === "<br>" || value === "") !== this.showPlaceholder) {
+
+    if ((!value || value === '<br>' || value === '') !== this.showPlaceholder) {
       this.togglePlaceholder(this.showPlaceholder);
     }
 
-    if (value === undefined || value === "" || value === "<br>") {
+    if (value === undefined || value === '' || value === '<br>') {
       value = null;
     }
 
@@ -285,12 +272,10 @@ export class AngularEditorComponent
    * @param value html string from the editor
    */
   refreshView(value: string): void {
-    const normalizedValue = value ?? "";
-    this.r.setProperty(
-      this.textArea.nativeElement,
-      "innerHTML",
-      normalizedValue
-    );
+    const normalizedValue = value === null ? '' : value;
+    this.r.setProperty(this.textArea.nativeElement, 'innerHTML', normalizedValue);
+
+    return;
   }
 
   /**
@@ -300,10 +285,11 @@ export class AngularEditorComponent
    */
   togglePlaceholder(value: boolean): void {
     if (!value) {
-      this.r.addClass(this.editorWrapper.nativeElement, "show-placeholder");
+      this.r.addClass(this.editorWrapper.nativeElement, 'show-placeholder');
       this.showPlaceholder = true;
+
     } else {
-      this.r.removeClass(this.editorWrapper.nativeElement, "show-placeholder");
+      this.r.removeClass(this.editorWrapper.nativeElement, 'show-placeholder');
       this.showPlaceholder = false;
     }
   }
@@ -315,8 +301,8 @@ export class AngularEditorComponent
    */
   setDisabledState(isDisabled: boolean): void {
     const div = this.textArea.nativeElement;
-    const action = isDisabled ? "addClass" : "removeClass";
-    this.r[action](div, "disabled");
+    const action = isDisabled ? 'addClass' : 'removeClass';
+    this.r[action](div, 'disabled');
     this.disabled = isDisabled;
   }
 
@@ -331,51 +317,43 @@ export class AngularEditorComponent
 
     if (bToSource) {
       oContent = this.r.createText(editableElement.innerHTML);
-      this.r.setProperty(editableElement, "innerHTML", "");
-      this.r.setProperty(editableElement, "contentEditable", false);
+      this.r.setProperty(editableElement, 'innerHTML', '');
+      this.r.setProperty(editableElement, 'contentEditable', false);
 
-      const oPre = this.r.createElement("pre");
-      this.r.setStyle(oPre, "margin", "0");
-      this.r.setStyle(oPre, "outline", "none");
+      const oPre = this.r.createElement('pre');
+      this.r.setStyle(oPre, 'margin', '0');
+      this.r.setStyle(oPre, 'outline', 'none');
 
-      const oCode = this.r.createElement("code");
-      this.r.setProperty(oCode, "id", "sourceText" + this.id);
-      this.r.setStyle(oCode, "display", "block");
-      this.r.setStyle(oCode, "white-space", "pre-wrap");
-      this.r.setStyle(oCode, "word-break", "keep-all");
-      this.r.setStyle(oCode, "outline", "none");
-      this.r.setStyle(oCode, "margin", "0");
-      this.r.setStyle(oCode, "background-color", "#fff5b9");
-      this.r.setProperty(oCode, "contentEditable", true);
+      const oCode = this.r.createElement('code');
+      this.r.setProperty(oCode, 'id', 'sourceText' + this.id);
+      this.r.setStyle(oCode, 'display', 'block');
+      this.r.setStyle(oCode, 'white-space', 'pre-wrap');
+      this.r.setStyle(oCode, 'word-break', 'keep-all');
+      this.r.setStyle(oCode, 'outline', 'none');
+      this.r.setStyle(oCode, 'margin', '0');
+      this.r.setStyle(oCode, 'background-color', '#fff5b9');
+      this.r.setProperty(oCode, 'contentEditable', true);
       this.r.appendChild(oCode, oContent);
-      this.focusInstance = this.r.listen(oCode, "focus", (event: any) =>
-        this.onTextAreaFocus(event)
-      );
-      this.blurInstance = this.r.listen(oCode, "blur", (event: any) =>
-        this.onTextAreaBlur(event)
-      );
+      this.focusInstance = this.r.listen(oCode, 'focus', (event) => this.onTextAreaFocus(event));
+      this.blurInstance = this.r.listen(oCode, 'blur', (event) => this.onTextAreaBlur(event));
       this.r.appendChild(oPre, oCode);
       this.r.appendChild(editableElement, oPre);
 
       // ToDo move to service
-      this.doc.execCommand("defaultParagraphSeparator", false, "div");
+      this.doc.execCommand('defaultParagraphSeparator', false, 'div');
 
       this.modeVisual = false;
       this.viewMode.emit(false);
       oCode.focus();
     } else {
       if (this.doc.querySelectorAll) {
-        this.r.setProperty(
-          editableElement,
-          "innerHTML",
-          editableElement.innerText
-        );
+        this.r.setProperty(editableElement, 'innerHTML', editableElement.innerText);
       } else {
         oContent = this.doc.createRange();
         oContent.selectNodeContents(editableElement.firstChild);
-        this.r.setProperty(editableElement, "innerHTML", oContent.toString());
+        this.r.setProperty(editableElement, 'innerHTML', oContent.toString());
       }
-      this.r.setProperty(editableElement, "contentEditable", true);
+      this.r.setProperty(editableElement, 'contentEditable', true);
       this.modeVisual = true;
       this.viewMode.emit(true);
       this.onContentChange(editableElement);
@@ -395,14 +373,12 @@ export class AngularEditorComponent
     let userSelection;
     if (this.doc.getSelection) {
       userSelection = this.doc.getSelection();
-      this.editorService.executeInNextQueueIteration(
-        this.editorService.saveSelection
-      );
+      this.editorService.executeInNextQueueIteration(this.editorService.saveSelection);
     }
 
     let a = userSelection.focusNode;
     const els = [];
-    while (a && a.id !== "editor") {
+    while (a && a.id !== 'editor') {
       els.unshift(a);
       a = a.parentNode;
     }
@@ -411,12 +387,9 @@ export class AngularEditorComponent
 
   private configure() {
     this.editorService.uploadUrl = this.config.uploadUrl;
-    this.editorService.uploadWithCredentials =
-      this.config.uploadWithCredentials;
+    this.editorService.uploadWithCredentials = this.config.uploadWithCredentials;
     if (this.config.defaultParagraphSeparator) {
-      this.editorService.setDefaultParagraphSeparator(
-        this.config.defaultParagraphSeparator
-      );
+      this.editorService.setDefaultParagraphSeparator(this.config.defaultParagraphSeparator);
     }
     if (this.config.defaultFontName) {
       this.editorService.setFontName(this.config.defaultFontName);
@@ -427,24 +400,22 @@ export class AngularEditorComponent
   }
 
   getFonts() {
-    const fonts = this.config.fonts
-      ? this.config.fonts
-      : angularEditorConfig.fonts;
-    return fonts.map((x: any) => {
-      return { label: x.name, value: x.name };
+    const fonts = this.config.fonts ? this.config.fonts : angularEditorConfig.fonts;
+    return fonts.map(x => {
+      return {label: x.name, value: x.name};
     });
   }
 
   getCustomTags() {
-    const tags = ["span"];
-    this.config.customClasses.forEach((x: any) => {
+    const tags = ['span'];
+    this.config.customClasses.forEach(x => {
       if (x.tag !== undefined) {
         if (!tags.includes(x.tag)) {
           tags.push(x.tag);
         }
       }
     });
-    return tags.join(",");
+    return tags.join(',');
   }
 
   ngOnDestroy() {
@@ -457,7 +428,7 @@ export class AngularEditorComponent
   }
 
   filterStyles(html: string): string {
-    html = html.replace("position: fixed;", "");
+    html = html.replace('position: fixed;', '');
     return html;
   }
 }
