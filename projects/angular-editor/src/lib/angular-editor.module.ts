@@ -1,7 +1,5 @@
 import { NgModule } from "@angular/core";
-import { AngularEditorComponent } from "./angular-editor.component";
-import { AngularEditorToolbarComponent } from "./angular-editor-toolbar.component";
-import {AeToolbarComponent} from './ae-toolbar/ae-toolbar.component';
+import { AeToolbarComponent } from './ae-toolbar/ae-toolbar.component';
 import { FormsModule, ReactiveFormsModule } from "@angular/forms";
 import { CommonModule } from "@angular/common";
 import { AeSelectComponent } from "./ae-select/ae-select.component";
@@ -9,24 +7,12 @@ import { AeButtonComponent } from "./ae-button/ae-button.component";
 import { AeToolbarSetComponent } from "./ae-toolbar-set/ae-toolbar-set.component";
 import { FaIconLibrary, FontAwesomeModule } from "@fortawesome/angular-fontawesome";
 import { faAlignCenter, faAlignJustify, faAlignLeft, faAlignRight, faBold, faCode, faFont, faImage, faIndent, faItalic, faLink, faLinkSlash, faListOl, faListUl, faMinus, faOutdent, faRepeat, faStrikethrough, faSubscript, faUnderline, faUndo, faVideo, faXmark, fas } from "@fortawesome/free-solid-svg-icons";
+import { AngularEditorComponent } from "angular-editor";
 
 @NgModule({
   imports: [CommonModule, FormsModule, ReactiveFormsModule, FontAwesomeModule],
-  declarations: [
-    AngularEditorComponent,
-    AngularEditorToolbarComponent,
-    AeSelectComponent,
-    AeButtonComponent,
-    AeToolbarSetComponent,
-    AeToolbarComponent
-  ],
-  exports: [
-    AngularEditorComponent,
-    AngularEditorToolbarComponent,
-    AeButtonComponent,
-    AeToolbarSetComponent,
-    AeToolbarComponent
-  ],
+  declarations: [AngularEditorComponent, AeToolbarComponent, AeSelectComponent, AeButtonComponent, AeToolbarSetComponent],
+  exports: [AngularEditorComponent, AeToolbarComponent, AeButtonComponent, AeToolbarSetComponent]
 })
 export class AngularEditorModule {
   constructor(library: FaIconLibrary) {
