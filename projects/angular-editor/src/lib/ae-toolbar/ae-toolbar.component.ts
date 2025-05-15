@@ -402,8 +402,6 @@ export class AeToolbarComponent {
       const selectedFile: File = inputElement.files[0]; // Access the first selected file
       if (selectedFile.type.includes('image/')) {
         const upload = this.upload();
-        const upload = this.upload();
-        const upload = this.upload();
         if (upload) {
           upload(selectedFile).subscribe((response: HttpResponse<UploadResponse>) => this.watchUploadImage(response, event));
         } else if (this.uploadUrl()) {
@@ -441,8 +439,6 @@ export class AeToolbarComponent {
     if (!name) {
       return false;
     }
-    const hiddenButtons = this.hiddenButtons();
-    const hiddenButtons = this.hiddenButtons();
     const hiddenButtons = this.hiddenButtons();
     if (!(hiddenButtons instanceof Array)) {
       return false;

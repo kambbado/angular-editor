@@ -4,7 +4,9 @@ import {
   HostAttributeToken, HostBinding, HostListener, inject, OnDestroy, OnInit,
   output, Output, Renderer2, SecurityContext, TemplateRef,
   viewChild,
-  input
+  input,
+  InputSignal,
+  signal
 } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { DomSanitizer } from '@angular/platform-browser';
@@ -73,7 +75,11 @@ export class AngularEditorComponent implements OnInit, ControlValueAccessor, Aft
 
   readonly focusEvent = output<FocusEvent>({ alias: 'focus' });
 
-  @HostBinding('attr.tabindex') tabindex = -1;
+  @HostBinding('attr.tabindex') tabindexAttr: InputSignal<number | null> = input(-1);
+  @HostBinding('attr.tabindex') get tabindex() {
+    return this.processedTabIndex();
+  }
+  processedTabIndex = signal(null);
 
   @HostListener('focus')
   onFocus() {
@@ -84,12 +90,10 @@ export class AngularEditorComponent implements OnInit, ControlValueAccessor, Aft
     const defaultTabIndex = inject(new HostAttributeToken('tabindex'));
 
     const parsedTabIndex = Number(defaultTabIndex);
-    this.tabIndex = (parsedTabIndex || parsedTabIndex === 0) ? parsedTabIndex : null;
+    this.processedTabIndex.set(parsedTabIndex || parsedTabIndex === 0 ? parsedTabIndex : null);
   }
 
   ngOnInit() {
-    const config = this.config();
-    const config = this.config();
     const config = this.config();
     this.config().toolbarPosition = config.toolbarPosition ? config.toolbarPosition : angularEditorConfig.toolbarPosition;
   }
@@ -99,6 +103,8 @@ export class AngularEditorComponent implements OnInit, ControlValueAccessor, Aft
       this.focus();
     }
   }
+
+
 
   onPaste(event: ClipboardEvent) {
     if (this.config().rawPaste) {
@@ -196,8 +202,8 @@ export class AngularEditorComponent implements OnInit, ControlValueAccessor, Aft
   }
 
   /**
-   * Executed from the contenteditable section while the input property changes
-   * @param element html element from contenteditable
+   * Executed from the content editable section while the input property changes
+   * @param element html element from content editable
    */
   onContentChange(event: Event): void {
     const element: HTMLElement = event.target as HTMLElement;
@@ -212,8 +218,6 @@ export class AngularEditorComponent implements OnInit, ControlValueAccessor, Aft
       html = '';
     }
     if (typeof this.onChange === 'function') {
-      const config = this.config();
-      const config = this.config();
       const config = this.config();
       this.onChange(config.sanitize || config.sanitize === undefined ?
         this.sanitizer.sanitize(SecurityContext.HTML, html) : html);
@@ -247,7 +251,7 @@ export class AngularEditorComponent implements OnInit, ControlValueAccessor, Aft
   /**
    * Write a new value to the element.
    *
-   * @param value value to be executed when there is a change in contenteditable
+   * @param value value to be executed when there is a change in content editable
    */
   writeValue(value: any): void {
 
@@ -336,7 +340,8 @@ export class AngularEditorComponent implements OnInit, ControlValueAccessor, Aft
       this.r.appendChild(editableElement, oPre);
 
       // ToDo move to service
-      this.doc.execCommand('defaultParagraphSeparator', false, 'div');
+      //this.doc.execCommand('defaultParagraphSeparator', false, 'div');
+      this.insertDivParagraph();
 
       this.modeVisual = false;
       this.viewMode.emit(false);
@@ -357,7 +362,26 @@ export class AngularEditorComponent implements OnInit, ControlValueAccessor, Aft
     }
     this.editorToolbar().setEditorMode(!this.modeVisual);
   }
+private insertDivParagraph(): void {
+  const selection = this.doc.getSelection();
+  if (!selection || selection.rangeCount === 0) {
+    return;
+  }
 
+  const range = selection.getRangeAt(0);
+  const div = this.doc.createElement('div');
+  const br = this.doc.createElement('br'); // Ensure an empty div takes up some space
+
+  div.appendChild(br);
+  range.deleteContents(); // Remove any selected content
+  range.insertNode(div);
+
+  // Move the selection inside the newly created div
+  range.setStart(div, 0);
+  range.setEnd(div, 0);
+  selection.removeAllRanges();
+  selection.addRange(range);
+}
   /**
    * toggles editor buttons when cursor moved or positioning
    *
@@ -385,8 +409,6 @@ export class AngularEditorComponent implements OnInit, ControlValueAccessor, Aft
     this.editorService.uploadUrl = this.config().uploadUrl;
     this.editorService.uploadWithCredentials = this.config().uploadWithCredentials;
     const config = this.config();
-    const config = this.config();
-    const config = this.config();
     if (config.defaultParagraphSeparator) {
       this.editorService.setDefaultParagraphSeparator(config.defaultParagraphSeparator);
     }
@@ -399,8 +421,6 @@ export class AngularEditorComponent implements OnInit, ControlValueAccessor, Aft
   }
 
   getFonts() {
-    const config = this.config();
-    const config = this.config();
     const config = this.config();
     const fonts = config.fonts ? config.fonts : angularEditorConfig.fonts;
     return fonts.map((x: Font) => {
