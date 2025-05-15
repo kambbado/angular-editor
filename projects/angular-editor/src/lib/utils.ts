@@ -11,187 +11,157 @@ export class ExecCommandReplacement {
 
   private static getSelectionAndRange(): { selection: Selection | null; range: Range | null } {
     const selection = this.doc.getSelection();
-    if (!selection || selection.rangeCount === 0) {
-      return { selection: null, range: null };
-    }
-    return { selection, range: selection.getRangeAt(0) };
+    return selection && selection.rangeCount > 0
+      ? { selection, range: selection.getRangeAt(0) }
+      : { selection: null, range: null };
   }
 
-  private static insertNodeAtRange(range: Range, node: Node, selectNewNode: boolean = false): void {
-    range.deleteContents();
-    range.insertNode(node);
-    if (selectNewNode) {
-      range.selectNode(node);
-    } else {
-      range.collapse(false); // Collapse to the end
+private static insertNodeAtRange(range: Range, node: Node, selectNewNode = false): void {
+  range.deleteContents();
+  range.insertNode(node);
+  selectNewNode ? range.selectNode(node) : range.collapse(false);
+  const selection = this.doc.getSelection();
+  selection?.removeAllRanges();
+  selection?.addRange(range);
+}
+
+  private static surroundRangeWithElement(range: Range, element: HTMLElement): void {
+    try {
+      range.surroundContents(element);
+      const selection = this.doc.getSelection();
+      selection?.removeAllRanges();
+      selection?.addRange(range);
+    } catch (e) {
+      console.warn('Failed to surround range:', e);
     }
-    const selection = this.doc.getSelection();
-    selection?.removeAllRanges();
-    selection?.addRange(range);
   }
 
-  private static surroundRangeWithElement(range: Range, element: Element): void {
-    range.surroundContents(element);
-    const selection = this.doc.getSelection();
-    selection?.removeAllRanges();
-  }
+  public static defaultParagraphSeparator(separator: string ='div'): void {
+    const { range } = this.getSelectionAndRange();
+    if (!range) return;
 
-  public static defaultParagraphSeparator(separator: string = 'div'): void {
-    const { selection, range } = this.getSelectionAndRange();
-    if (!range) {
-      return;
-    }
-
-    const div = this.doc.createElement(separator);
-    const br = this.doc.createElement('br'); // Ensure an empty div takes up some space
-
-    div.appendChild(br);
-    this.insertNodeAtRange(range, div, true); // Select the new div
+    const block = this.doc.createElement(separator);
+    block.appendChild(this.doc.createElement('br')); // Ensure empty block takes space
+    this.insertNodeAtRange(range, block, true);
   }
 
   public static formatBlock(blockType: string): void {
     const { selection, range } = this.getSelectionAndRange();
-    if (!range) {
+    if (!range || !selection) return;
+
+    const newBlock = this.doc.createElement(blockType);
+    const commonAncestor = range.commonAncestorContainer;
+
+    if (commonAncestor.nodeType === Node.TEXT_NODE) {
+      this.surroundRangeWithElement(range, newBlock);
+      selection.selectAllChildren(newBlock);
       return;
     }
 
-    const selectedNodes: Node[] = [];
+    const blockParents = new Set<HTMLElement>();
+    const walker = this.doc.createTreeWalker(
+      commonAncestor,
+      NodeFilter.SHOW_ELEMENT,
+      {
+        acceptNode: (node: HTMLElement) =>
+          range.intersectsNode(node) && this.doc.defaultView?.getComputedStyle(node).display === 'block' && node.isContentEditable
+            ? NodeFilter.FILTER_ACCEPT
+            : NodeFilter.FILTER_REJECT,
+      },
+    );
 
-    // Helper function to get all nodes within a range
-    function getNodesInRange(r: Range, nodeList: Node[]) {
-      const walker = this.doc.createTreeWalker(r.commonAncestorContainer, NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT, (node: Node) => {
-        if (r.intersectsNode(node)) {
-          return NodeFilter.FILTER_ACCEPT;
-        }
-        return NodeFilter.FILTER_REJECT;
-      });
-      let node = walker.firstChild();
-      while (node) {
-        nodeList.push(node);
-        node = walker.nextNode();
-      }
+    let node: HTMLElement | null = walker.firstChild() as HTMLElement;
+    while (node) {
+      blockParents.add(node);
+      node = walker.nextNode() as HTMLElement;
     }
 
-    getNodesInRange.call(this, range, selectedNodes);
-
-    if (selectedNodes.length > 0) {
-      // Find the closest parent block elements encompassing the selection
-      const blockParents: Element[] = [];
-      selectedNodes.forEach(node => {
-        let parent: Element | null = node instanceof Element ? node : node.parentElement;
-        while (parent && this.doc.defaultView?.getComputedStyle(parent).display !== 'block') {
-          parent = <HTMLElement | null>parent.parentElement;
-        }
-        if (parent && !blockParents.includes(parent) && (<HTMLElement>parent).isContentEditable) {
-          blockParents.push(parent);
-        } else if (!parent && node.parentNode && (<HTMLElement>node.parentNode).isContentEditable && !blockParents.includes(<HTMLElement>node.parentNode)) {
-          blockParents.push(<HTMLElement>node.parentNode);
-        }
+    if (blockParents.size > 0) {
+      blockParents.forEach((block) => {
+        const newBlockClone = this.doc.createElement(blockType);
+        while (block.firstChild) newBlockClone.appendChild(block.firstChild);
+        block.replaceWith(newBlockClone);
       });
-
-      if (blockParents.length > 0) {
-        blockParents.forEach(block => {
-          const newBlock = this.doc.createElement(blockType);
-          // Move all child nodes of the current block to the new block
-          while (block.firstChild) {
-            newBlock.appendChild(block.firstChild);
-          }
-          // Replace the old block with the new one
-          block.parentNode?.insertBefore(newBlock, block);
-          block.parentNode?.removeChild(block);
-        });
-      } else if (selectedNodes.length > 0) {
-        // If no parent block elements are found, wrap the selected content
-        const newBlock = this.doc.createElement(blockType);
-        this.surroundRangeWithElement(range, newBlock);
-        selection?.selectAllChildren(newBlock); // Re-select the content
-      }
+    } else {
+      this.surroundRangeWithElement(range, newBlock);
+      selection.selectAllChildren(newBlock);
     }
   }
 
   public static insertLink(url: string): void {
     const { selection, range } = this.getSelectionAndRange();
-    if (!range) {
-      return; // No text selected
-    }
+    if (!range || !selection) return;
 
-    const selectedText = range.toString();
     const link = this.doc.createElement('a');
     link.href = url;
+    const selectedText = range.toString();
 
     if (selectedText) {
       link.textContent = selectedText;
-      this.insertNodeAtRange(range, link, true); // Select the new link
+      this.insertNodeAtRange(range, link, true);
     } else {
       link.textContent = url;
       const caretRange = range.cloneRange();
       caretRange.collapse(true);
       caretRange.insertNode(link);
       caretRange.setStartAfter(link);
-      caretRange.collapse(true);
-      selection?.removeAllRanges();
-      selection?.addRange(caretRange);
+      selection.removeAllRanges();
+      selection.addRange(caretRange);
     }
   }
 
   public static replaceInsertColor(colorClass: string): void {
-    const { selection, range } = this.getSelectionAndRange();
-    if (range) {
-      const span = this.doc.createElement('span');
-      span.classList.add(colorClass);
-      this.surroundRangeWithElement(range, span);
-    }
+    const { range } = this.getSelectionAndRange();
+    if (!range) return;
+
+    const span = this.doc.createElement('span');
+    span.classList.add(colorClass);
+    this.surroundRangeWithElement(range, span);
   }
 
   public static replaceHighlightColorWithSpan(color: string): void {
-    const { selection, range } = this.getSelectionAndRange();
-    if (range) {
-      const span = this.doc.createElement('span');
-      span.style.backgroundColor = color;
-      this.surroundRangeWithElement(range, span);
-    }
+    const { range } = this.getSelectionAndRange();
+    if (!range) return;
+
+    const span = this.doc.createElement('span');
+    span.style.backgroundColor = color;
+    this.surroundRangeWithElement(range, span);
   }
 
   public static replaceFontNameWithSpan(fontName: string): void {
-    const { selection, range } = this.getSelectionAndRange();
-    if (range) {
-      const span = this.doc.createElement('span');
-      span.style.fontFamily = fontName;
-      this.surroundRangeWithElement(range, span);
-    }
+    const { range } = this.getSelectionAndRange();
+    if (!range) return;
+
+    const span = this.doc.createElement('span');
+    span.style.fontFamily = fontName;
+    this.surroundRangeWithElement(range, span);
   }
 
   public static replaceFontSizeWithSpan(fontSize: string): void {
-    const { selection, range } = this.getSelectionAndRange();
-    if (range) {
-      const span = this.doc.createElement('span');
-      span.style.fontSize = fontSize;
-      this.surroundRangeWithElement(range, span);
-    }
+    const { range } = this.getSelectionAndRange();
+    if (!range) return;
+
+    const span = this.doc.createElement('span');
+    span.style.fontSize = fontSize;
+    this.surroundRangeWithElement(range, span);
   }
 
   public static replaceInsertHTML(html: string): boolean {
-    const { selection, range } = this.getSelectionAndRange();
-    if (!range) {
-      return false;
-    }
+    const { range } = this.getSelectionAndRange();
+    if (!range) return false;
 
+    const fragment = this.doc.createDocumentFragment();
     const tempElement = this.doc.createElement('div');
     tempElement.innerHTML = html;
-    const fragment = this.doc.createDocumentFragment();
-    while (tempElement.firstChild) {
-      fragment.appendChild(tempElement.firstChild);
-    }
+    while (tempElement.firstChild) fragment.appendChild(tempElement.firstChild);
 
     this.insertNodeAtRange(range, fragment);
     return true;
   }
 
   public static replaceInsertImage(imageUrl: string): boolean {
-    const { selection, range } = this.getSelectionAndRange();
-    if (!range) {
-      return false;
-    }
+    const { range } = this.getSelectionAndRange();
+    if (!range) return false;
 
     const img = this.doc.createElement('img');
     img.src = imageUrl;
@@ -199,15 +169,31 @@ export class ExecCommandReplacement {
     return true;
   }
 
-  public static replaceExecCommand(command: string, value?: any): boolean {
-    const { selection, range } = this.getSelectionAndRange();
-    if (!range) {
-      return false;
+  public static replaceExecCommand(command: string, value?: string): boolean {
+    const { range, selection } = this.getSelectionAndRange();
+    if (!range || !selection) return false;
+
+    const blockCommands = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'pre'];
+    if (blockCommands.includes(command)) {
+      this.formatBlock(command);
+      return true;
+    }
+
+    const inlineTagMap: Record<string, string> = {
+      bold: 'b',
+      italic: 'i',
+      underline: 'u',
+    };
+
+    if (command in inlineTagMap) {
+      const element = this.doc.createElement(inlineTagMap[command]);
+      this.surroundRangeWithElement(range, element);
+      return true;
     }
 
     switch (command) {
       case 'foreColor':
-        if (typeof value === 'string') {
+        if (value) {
           const span = this.doc.createElement('span');
           span.style.color = value;
           this.surroundRangeWithElement(range, span);
@@ -217,7 +203,7 @@ export class ExecCommandReplacement {
 
       case 'hiliteColor':
       case 'backColor':
-        if (typeof value === 'string') {
+        if (value) {
           const span = this.doc.createElement('span');
           span.style.backgroundColor = value;
           this.surroundRangeWithElement(range, span);
@@ -226,7 +212,7 @@ export class ExecCommandReplacement {
         return false;
 
       case 'fontName':
-        if (typeof value === 'string') {
+        if (value) {
           const span = this.doc.createElement('span');
           span.style.fontFamily = value;
           this.surroundRangeWithElement(range, span);
@@ -235,7 +221,7 @@ export class ExecCommandReplacement {
         return false;
 
       case 'fontSize':
-        if (typeof value === 'string') {
+        if (value) {
           const span = this.doc.createElement('span');
           span.style.fontSize = value;
           this.surroundRangeWithElement(range, span);
@@ -244,71 +230,22 @@ export class ExecCommandReplacement {
         return false;
 
       case 'insertHTML':
-        if (typeof value === 'string') {
-          const tempElement = this.doc.createElement('div');
-          tempElement.innerHTML = value;
-          const fragment = this.doc.createDocumentFragment();
-          while (tempElement.firstChild) {
-            fragment.appendChild(tempElement.firstChild);
-          }
-          this.insertNodeAtRange(range, fragment);
-          return true;
-        }
+        if (value) return this.replaceInsertHTML(value);
         return false;
 
       case 'insertImage':
-        if (typeof value === 'string') {
-          const img = this.doc.createElement('img');
-          img.src = value;
-          this.insertNodeAtRange(range, img);
-          return true;
-        }
+        if (value) return this.replaceInsertImage(value);
         return false;
 
-      case 'h1':
-      case 'h2':
-      case 'h3':
-      case 'h4':
-      case 'h5':
-      case 'h6':
-      case 'p':
-      case 'pre':
-        const newElement = this.doc.createElement(command);
-        const selectedContent = range.extractContents();
-        newElement.appendChild(selectedContent);
-        this.insertNodeAtRange(range, newElement);
-        return true;
-
-      case 'bold':
-      case 'italic':
-      case 'underline':
-        return this.doc.execCommand(command, false, value);
-
       case 'createLink':
-        if (typeof value === 'string') {
-          const link = this.doc.createElement('a');
-          link.href = value;
-          const selectedText = selection?.toString();
-          if (selectedText) {
-            link.textContent = selectedText;
-            this.insertNodeAtRange(range, link, true);
-            return true;
-          } else {
-            link.textContent = value;
-            const caretRange = range.cloneRange();
-            caretRange.collapse(true);
-            caretRange.insertNode(link);
-            caretRange.setStartAfter(link);
-            caretRange.collapse(true);
-            selection?.removeAllRanges();
-            selection?.addRange(caretRange);
-            return true;
-          }
+        if (value) {
+          this.insertLink(value);
+          return true;
         }
         return false;
 
       default:
-        console.warn(`Command "${command}" is not handled by the replacement.`);
+        console.warn(`Unsupported command: ${command}`);
         return false;
     }
   }
