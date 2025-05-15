@@ -1,23 +1,23 @@
 <div
   class="angular-editor"
   #angularEditor
-  [style.width]="config.width"
-  [style.minWidth]="config.minWidth"
+  [style.width]="config().width"
+  [style.minWidth]="config().minWidth"
   [ngClass]="{
-     'bottom': config.toolbarPosition === 'bottom'
+     'bottom': config().toolbarPosition === 'bottom'
      }"
 >
   <angular-editor-toolbar
     #editorToolbar
-    [id]="id"
-    [uploadUrl]="config.uploadUrl"
-    [upload]="config.upload"
-    [showToolbar]="config.showToolbar !== undefined ? config.showToolbar : true"
+    [id]="id()"
+    [uploadUrl]="config().uploadUrl"
+    [upload]="config().upload"
+    [showToolbar]="config().showToolbar !== undefined ? config().showToolbar : true"
     [fonts]="getFonts()"
-    [customClasses]="config.customClasses"
-    [defaultFontName]="config.defaultFontName"
-    [defaultFontSize]="config.defaultFontSize"
-    [hiddenButtons]="config.toolbarHiddenButtons"
+    [customClasses]="config().customClasses"
+    [defaultFontName]="config().defaultFontName"
+    [defaultFontSize]="config().defaultFontSize"
+    [hiddenButtons]="config().toolbarHiddenButtons"
     (execute)="executeCommand($event)"
   >
     <ng-container
@@ -34,14 +34,14 @@
     <div
       #editor
       class="angular-editor-textarea"
-      [attr.contenteditable]="config.editable"
-      [attr.tabindex]="disabled ? -1 : tabIndex"
-      [attr.translate]="config.translate"
-      [attr.spellcheck]="config.spellcheck"
-      [style.height]="config.height"
-      [style.minHeight]="config.minHeight"
-      [style.maxHeight]="config.maxHeight"
-      [style.outline]="config.outline === false ? 'none': undefined"
+      [attr.contenteditable]="config().editable"
+      [attr.tabindex]="disabled ? -1 : tabIndex()"
+      [attr.translate]="config().translate"
+      [attr.spellcheck]="config().spellcheck"
+      [style.height]="config().height"
+      [style.minHeight]="config().minHeight"
+      [style.maxHeight]="config().maxHeight"
+      [style.outline]="config().outline === false ? 'none': undefined"
       (input)="onContentChange($event)"
       (focus)="onTextAreaFocus($event)"
       (blur)="onTextAreaBlur($event)"
@@ -51,6 +51,6 @@
       (paste)="onPaste($event)"
     >
     </div>
-    <span class="angular-editor-placeholder">{{ placeholder || config['placeholder'] }}</span>
+    <span class="angular-editor-placeholder">{{ placeholder() || config()['placeholder'] }}</span>
   </div>
 </div>

@@ -1,9 +1,10 @@
 import { DOCUMENT } from '@angular/common';
 import {
   AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, contentChild, ElementRef, forwardRef,
-  HostAttributeToken, HostBinding, HostListener, inject, Input, OnDestroy, OnInit,
+  HostAttributeToken, HostBinding, HostListener, inject, OnDestroy, OnInit,
   output, Output, Renderer2, SecurityContext, TemplateRef,
-  viewChild
+  viewChild,
+  input
 } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { DomSanitizer } from '@angular/platform-browser';
@@ -49,10 +50,10 @@ export class AngularEditorComponent implements OnInit, ControlValueAccessor, Aft
   focusInstance: any;
   blurInstance: any;
 
-  @Input() id = '';
-  @Input() config: AngularEditorConfig = angularEditorConfig;
-  @Input() placeholder = '';
-  @Input() tabIndex: number | null;
+  readonly id = input('');
+  readonly config = input<AngularEditorConfig>(angularEditorConfig);
+  readonly placeholder = input('');
+  readonly tabIndex = input<number | null>(undefined);
 
   @Output() html: any;
 
@@ -87,7 +88,10 @@ export class AngularEditorComponent implements OnInit, ControlValueAccessor, Aft
   }
 
   ngOnInit() {
-    this.config.toolbarPosition = this.config.toolbarPosition ? this.config.toolbarPosition : angularEditorConfig.toolbarPosition;
+    const config = this.config();
+    const config = this.config();
+    const config = this.config();
+    this.config().toolbarPosition = config.toolbarPosition ? config.toolbarPosition : angularEditorConfig.toolbarPosition;
   }
 
   ngAfterViewInit() {
@@ -97,7 +101,7 @@ export class AngularEditorComponent implements OnInit, ControlValueAccessor, Aft
   }
 
   onPaste(event: ClipboardEvent) {
-    if (this.config.rawPaste) {
+    if (this.config().rawPaste) {
       event.preventDefault();
       const text = event.clipboardData.getData('text/plain');
       document.execCommand('insertHTML', false, text);
@@ -185,7 +189,7 @@ export class AngularEditorComponent implements OnInit, ControlValueAccessor, Aft
     if (this.modeVisual) {
       this.textArea().nativeElement.focus();
     } else {
-      const sourceText = this.doc.getElementById('sourceText' + this.id);
+      const sourceText = this.doc.getElementById('sourceText' + this.id());
       sourceText.focus();
       this.focused = true;
     }
@@ -208,7 +212,10 @@ export class AngularEditorComponent implements OnInit, ControlValueAccessor, Aft
       html = '';
     }
     if (typeof this.onChange === 'function') {
-      this.onChange(this.config.sanitize || this.config.sanitize === undefined ?
+      const config = this.config();
+      const config = this.config();
+      const config = this.config();
+      this.onChange(config.sanitize || config.sanitize === undefined ?
         this.sanitizer.sanitize(SecurityContext.HTML, html) : html);
       if ((!html) !== this.showPlaceholder) {
         this.togglePlaceholder(this.showPlaceholder);
@@ -314,7 +321,7 @@ export class AngularEditorComponent implements OnInit, ControlValueAccessor, Aft
       this.r.setStyle(oPre, 'outline', 'none');
 
       const oCode = this.r.createElement('code');
-      this.r.setProperty(oCode, 'id', 'sourceText' + this.id);
+      this.r.setProperty(oCode, 'id', 'sourceText' + this.id());
       this.r.setStyle(oCode, 'display', 'block');
       this.r.setStyle(oCode, 'white-space', 'pre-wrap');
       this.r.setStyle(oCode, 'word-break', 'keep-all');
@@ -375,21 +382,27 @@ export class AngularEditorComponent implements OnInit, ControlValueAccessor, Aft
   }
 
   private configure() {
-    this.editorService.uploadUrl = this.config.uploadUrl;
-    this.editorService.uploadWithCredentials = this.config.uploadWithCredentials;
-    if (this.config.defaultParagraphSeparator) {
-      this.editorService.setDefaultParagraphSeparator(this.config.defaultParagraphSeparator);
+    this.editorService.uploadUrl = this.config().uploadUrl;
+    this.editorService.uploadWithCredentials = this.config().uploadWithCredentials;
+    const config = this.config();
+    const config = this.config();
+    const config = this.config();
+    if (config.defaultParagraphSeparator) {
+      this.editorService.setDefaultParagraphSeparator(config.defaultParagraphSeparator);
     }
-    if (this.config.defaultFontName) {
-      this.editorService.setFontName(this.config.defaultFontName);
+    if (config.defaultFontName) {
+      this.editorService.setFontName(config.defaultFontName);
     }
-    if (this.config.defaultFontSize) {
-      this.editorService.setFontSize(this.config.defaultFontSize);
+    if (config.defaultFontSize) {
+      this.editorService.setFontSize(config.defaultFontSize);
     }
   }
 
   getFonts() {
-    const fonts = this.config.fonts ? this.config.fonts : angularEditorConfig.fonts;
+    const config = this.config();
+    const config = this.config();
+    const config = this.config();
+    const fonts = config.fonts ? config.fonts : angularEditorConfig.fonts;
     return fonts.map((x: Font) => {
       return { label: x.name, value: x.name };
     });
@@ -397,7 +410,7 @@ export class AngularEditorComponent implements OnInit, ControlValueAccessor, Aft
 
   getCustomTags() {
     const tags = ['span'];
-    this.config.customClasses.forEach((x: CustomClass) => {
+    this.config().customClasses.forEach((x: CustomClass) => {
       if (x.tag !== undefined) {
         if (!tags.includes(x.tag)) {
           tags.push(x.tag);

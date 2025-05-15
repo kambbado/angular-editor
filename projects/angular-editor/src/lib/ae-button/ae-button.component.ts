@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 
 @Component({
   selector: 'ae-button, button[aeButton]',
@@ -14,7 +14,7 @@ import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 })
 export class AeButtonComponent {
 
-  @Input() iconName = '';
+  readonly iconName = input('');
 
   constructor() {
   }

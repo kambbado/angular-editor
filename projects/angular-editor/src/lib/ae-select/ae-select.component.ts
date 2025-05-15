@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ElementRef, forwardRef, HostBinding, HostListener, inject, Input, OnInit, output, Renderer2, viewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, forwardRef, HostBinding, HostListener, inject, OnInit, output, Renderer2, viewChild, input } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { isDefined } from '../utils';
 
@@ -25,9 +25,9 @@ export class AeSelectComponent implements OnInit, ControlValueAccessor {
   private elRef = inject(ElementRef);
   private r = inject(Renderer2);
 
-  @Input() options: SelectOption[] = [];
+  readonly options = input<SelectOption[]>([]);
 
-  @Input('hidden') isHidden: boolean;
+  readonly isHidden = input<boolean>(undefined, { alias: "hidden" });
 
   selectedOption: SelectOption;
   disabled = false;
@@ -51,8 +51,11 @@ export class AeSelectComponent implements OnInit, ControlValueAccessor {
   readonly labelButton = viewChild<ElementRef>('labelButton');
 
   ngOnInit() {
-    this.selectedOption = this.options[0];
-    if (isDefined(this.isHidden) && this.isHidden) {
+    this.selectedOption = this.options()[0];
+    const isHidden = this.isHidden();
+    const isHidden = this.isHidden();
+    const isHidden = this.isHidden();
+    if (isDefined(isHidden) && isHidden) {
       this.hide();
     }
   }
@@ -115,7 +118,7 @@ export class AeSelectComponent implements OnInit, ControlValueAccessor {
 
   setValue(value: any) {
     let index = 0;
-    const selectedEl = this.options.find((el:SelectOption, i:number) => {
+    const selectedEl = this.options().find((el:SelectOption, i:number) => {
       index = i;
       return el.value === value;
     });
@@ -183,7 +186,7 @@ export class AeSelectComponent implements OnInit, ControlValueAccessor {
   }
 
   _handleArrowDown($event: any) {
-    if (this.optionId < this.options.length - 1) {
+    if (this.optionId < this.options().length - 1) {
       this.optionId++;
     }
   }
@@ -199,7 +202,7 @@ export class AeSelectComponent implements OnInit, ControlValueAccessor {
   }
 
   _handleEnter($event: any) {
-    this.optionSelect(this.options[this.optionId], $event);
+    this.optionSelect(this.options()[this.optionId], $event);
   }
 
   _handleTab($event: any) {

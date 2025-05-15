@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { NgModule } from '@angular/core';
+import { NgModule, inject } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { FaIconLibrary, FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import {
@@ -29,7 +29,13 @@ import { AngularEditorComponent } from './editor/angular-editor.component';
     AeToolbarSetComponent]
 })
 export class AngularEditorModule {
-  constructor(library: FaIconLibrary) {
+
+  /** Inserted by Angular inject() migration for backwards compatibility */
+  constructor(...args: unknown[]);
+
+  constructor() {
+    const library = inject(FaIconLibrary);
+
     // Add an icon to the library for convenient access in other components
     library.addIconPacks(fas);
     library.addIcons(faUndo, faRepeat, faBold, faItalic, faUnderline,

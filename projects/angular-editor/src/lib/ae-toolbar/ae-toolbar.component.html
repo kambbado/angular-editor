@@ -1,4 +1,4 @@
-@if (showToolbar) {
+@if (showToolbar()) {
   <div class="angular-editor-toolbar">
     <div aeToolbarSet>
       <button aeButton title="Undo" iconName="undo" (click)="triggerCommand('undo')" [hidden]="isButtonHidden('undo')">
@@ -8,61 +8,61 @@
       </button>
     </div>
     <div aeToolbarSet>
-      <button [id]="'bold-'+id" aeButton title="Bold" iconName="bold" (click)="triggerCommand('bold')"
+      <button [id]="'bold-'+id()" aeButton title="Bold" iconName="bold" (click)="triggerCommand('bold')"
         [disabled]="htmlMode" [hidden]="isButtonHidden('bold')">
       </button>
-      <button [id]="'italic-'+id" aeButton iconName="italic" title="Italic" (click)="triggerCommand('italic')"
+      <button [id]="'italic-'+id()" aeButton iconName="italic" title="Italic" (click)="triggerCommand('italic')"
         [disabled]="htmlMode" [hidden]="isButtonHidden('italic')">
       </button>
-      <button [id]="'underline-'+id" aeButton title="Underline" iconName="underline"
+      <button [id]="'underline-'+id()" aeButton title="Underline" iconName="underline"
         (click)="triggerCommand('underline')" [disabled]="htmlMode" [hidden]="isButtonHidden('underline')">
       </button>
-      <button [id]="'strikeThrough-'+id" aeButton iconName="strikeThrough" title="Strikethrough"
+      <button [id]="'strikeThrough-'+id()" aeButton iconName="strikeThrough" title="Strikethrough"
         (click)="triggerCommand('strikeThrough')" [disabled]="htmlMode"
         [hidden]="isButtonHidden('strikeThrough')">
       </button>
-      <button [id]="'subscript-'+id" aeButton title="Subscript" iconName="subscript"
+      <button [id]="'subscript-'+id()" aeButton title="Subscript" iconName="subscript"
         (click)="triggerCommand('subscript')" [disabled]="htmlMode" [hidden]="isButtonHidden('subscript')">
       </button>
-      <button [id]="'superscript-'+id" aeButton iconName="superscript" title="Superscript"
+      <button [id]="'superscript-'+id()" aeButton iconName="superscript" title="Superscript"
         (click)="triggerCommand('superscript')" [disabled]="htmlMode"
         [hidden]="isButtonHidden('superscript')">
       </button>
     </div>
     <div aeToolbarSet>
-      <button [id]="'justifyLeft-'+id" aeButton iconName="justifyLeft" title="Justify Left"
+      <button [id]="'justifyLeft-'+id()" aeButton iconName="justifyLeft" title="Justify Left"
         (click)="triggerCommand('justifyLeft')" [disabled]="htmlMode"
         [hidden]="isButtonHidden('justifyLeft')">
       </button>
-      <button [id]="'justifyCenter-'+id" aeButton iconName="justifyCenter" title="Justify Center"
+      <button [id]="'justifyCenter-'+id()" aeButton iconName="justifyCenter" title="Justify Center"
         (click)="triggerCommand('justifyCenter')" [disabled]="htmlMode"
         [hidden]="isButtonHidden('justifyCenter')">
       </button>
-      <button [id]="'justifyRight-'+id" aeButton iconName="justifyRight" title="Justify Right"
+      <button [id]="'justifyRight-'+id()" aeButton iconName="justifyRight" title="Justify Right"
         (click)="triggerCommand('justifyRight')" [disabled]="htmlMode"
         [hidden]="isButtonHidden('justifyRight')">
       </button>
-      <button [id]="'justifyFull-'+id" aeButton iconName="justifyFull" title="Justify Full"
+      <button [id]="'justifyFull-'+id()" aeButton iconName="justifyFull" title="Justify Full"
         (click)="triggerCommand('justifyFull')" [disabled]="htmlMode"
         [hidden]="isButtonHidden('justifyFull')">
       </button>
     </div>
     <div aeToolbarSet>
-      <button [id]="'indent-'+id" aeButton iconName="indent" title="Indent"
+      <button [id]="'indent-'+id()" aeButton iconName="indent" title="Indent"
         (click)="triggerCommand('indent')"
         [disabled]="htmlMode" [hidden]="isButtonHidden('indent')">
       </button>
-      <button [id]="'outdent-'+id" aeButton iconName="outdent" title="Outdent"
+      <button [id]="'outdent-'+id()" aeButton iconName="outdent" title="Outdent"
         (click)="triggerCommand('outdent')"
         [disabled]="htmlMode" [hidden]="isButtonHidden('outdent')">
       </button>
     </div>
     <div aeToolbarSet>
-      <button [id]="'insertUnorderedList-'+id" aeButton iconName="unorderedList" title="Unordered List"
+      <button [id]="'insertUnorderedList-'+id()" aeButton iconName="unorderedList" title="Unordered List"
         (click)="triggerCommand('insertUnorderedList')" [disabled]="htmlMode"
         [hidden]="isButtonHidden('insertUnorderedList')">
       </button>
-      <button [id]="'insertOrderedList-'+id" aeButton iconName="orderedList" title="Ordered List"
+      <button [id]="'insertOrderedList-'+id()" aeButton iconName="orderedList" title="Ordered List"
         (click)="triggerCommand('insertOrderedList')" [disabled]="htmlMode"
         [hidden]="isButtonHidden('insertOrderedList')">
       </button>
@@ -76,7 +76,7 @@
       tabindex="-1"></ae-select>
     </div>
     <div aeToolbarSet>
-      <ae-select class="select-font" [options]="fonts"
+      <ae-select class="select-font" [options]="fonts()"
         [(ngModel)]="fontName"
         (change)="setFontName(fontName)"
         [disabled]="htmlMode"
@@ -97,7 +97,7 @@
         style="display: none"
         type="color" (change)="insertColor(fgInput.value, 'textColor')"
         #fgInput>
-        <button [id]="'foregroundColorPicker-'+id" aeButton iconName="textColor"
+        <button [id]="'foregroundColorPicker-'+id()" aeButton iconName="textColor"
           (click)="focus(); ; fgInput.click()"
           title="Text Color"
           [disabled]="htmlMode" [hidden]="isButtonHidden('textColor')">
@@ -106,7 +106,7 @@
           style="display: none"
           type="color" (change)="insertColor(bgInput.value, 'backgroundColor')"
           #bgInput>
-          <button [id]="'backgroundColorPicker-'+id" aeButton iconName="backgroundColor"
+          <button [id]="'backgroundColorPicker-'+id()" aeButton iconName="backgroundColor"
             (click)="focus(); ; bgInput.click()"
             title="Background Color"
             [disabled]="htmlMode" [hidden]="isButtonHidden('backgroundColor')">
@@ -123,10 +123,10 @@
           </div>
         }
         <div aeToolbarSet>
-          <button [id]="'link-'+id" aeButton iconName="link" (click)="insertUrl()"
+          <button [id]="'link-'+id()" aeButton iconName="link" (click)="insertUrl()"
             title="Insert Link" [disabled]="isLinkButtonDisabled" [hidden]="isButtonHidden('link')">
           </button>
-          <button [id]="'unlink-'+id" aeButton iconName="unlink" (click)="triggerCommand('unlink')"
+          <button [id]="'unlink-'+id()" aeButton iconName="unlink" (click)="triggerCommand('unlink')"
             title="Unlink" [disabled]="htmlMode || !linkSelected" [hidden]="isButtonHidden('unlink')">
           </button>
           <input
@@ -134,27 +134,27 @@
             accept="image/*"
             type="file" (change)="onFileChanged($event)"
             #fileInput>
-            <button [id]="'insertImage-'+id" aeButton iconName="image" (click)="focus(); fileInput.click()"
+            <button [id]="'insertImage-'+id()" aeButton iconName="image" (click)="focus(); fileInput.click()"
               title="Insert Image"
               [disabled]="htmlMode" [hidden]="isButtonHidden('insertImage')">
             </button>
-            <button [id]="'insertVideo-'+id" aeButton iconName="video"
+            <button [id]="'insertVideo-'+id()" aeButton iconName="video"
               (click)="insertVideo()" title="Insert Video" [disabled]="htmlMode"
               [hidden]="isButtonHidden('insertVideo')">
             </button>
-            <button [id]="'insertHorizontalRule-'+id" aeButton iconName="horizontalLine" title="Horizontal Line"
+            <button [id]="'insertHorizontalRule-'+id()" aeButton iconName="horizontalLine" title="Horizontal Line"
               (click)="triggerCommand('insertHorizontalRule')" [disabled]="htmlMode"
               [hidden]="isButtonHidden('insertHorizontalRule')">
             </button>
           </div>
           <div aeToolbarSet>
-            <button [id]="'clearFormatting-'+id" aeButton iconName="removeFormat" title="Clear Formatting"
+            <button [id]="'clearFormatting-'+id()" aeButton iconName="removeFormat" title="Clear Formatting"
               class="angular-editor-button"
               (click)="triggerCommand('removeFormat')" [disabled]="htmlMode" [hidden]="isButtonHidden('removeFormat')">
             </button>
           </div>
           <div aeToolbarSet>
-            <button [id]="'toggleEditorMode-'+id" aeButton iconName="htmlCode" title="HTML Code"
+            <button [id]="'toggleEditorMode-'+id()" aeButton iconName="htmlCode" title="HTML Code"
               (click)="triggerCommand('toggleEditorMode')" [hidden]="isButtonHidden('toggleEditorMode')">
             </button>
           </div>
