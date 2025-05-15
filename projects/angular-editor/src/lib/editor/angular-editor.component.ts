@@ -13,7 +13,7 @@ import { DomSanitizer } from '@angular/platform-browser';
 import { AeToolbarComponent } from '../ae-toolbar/ae-toolbar.component';
 import { AngularEditorService } from '../angular-editor.service';
 import { AngularEditorConfig, angularEditorConfig, CustomClass, Font } from '../config';
-import { isDefined } from '../utils';
+import { ExecCommandReplacement, isDefined } from '../utils';
 
 @Component({
   selector: 'angular-editor',
@@ -110,7 +110,8 @@ export class AngularEditorComponent implements OnInit, ControlValueAccessor, Aft
     if (this.config().rawPaste) {
       event.preventDefault();
       const text = event.clipboardData.getData('text/plain');
-      document.execCommand('insertHTML', false, text);
+      ExecCommandReplacement.replaceInsertHTML(text);
+      //document.execCommand('insertHTML', false, text);
       return text;
     }
   }
@@ -341,7 +342,7 @@ export class AngularEditorComponent implements OnInit, ControlValueAccessor, Aft
 
       // ToDo move to service
       //this.doc.execCommand('defaultParagraphSeparator', false, 'div');
-      this.insertDivParagraph();
+      ExecCommandReplacement.defaultParagraphSeparator();
 
       this.modeVisual = false;
       this.viewMode.emit(false);
@@ -362,26 +363,7 @@ export class AngularEditorComponent implements OnInit, ControlValueAccessor, Aft
     }
     this.editorToolbar().setEditorMode(!this.modeVisual);
   }
-private insertDivParagraph(): void {
-  const selection = this.doc.getSelection();
-  if (!selection || selection.rangeCount === 0) {
-    return;
-  }
 
-  const range = selection.getRangeAt(0);
-  const div = this.doc.createElement('div');
-  const br = this.doc.createElement('br'); // Ensure an empty div takes up some space
-
-  div.appendChild(br);
-  range.deleteContents(); // Remove any selected content
-  range.insertNode(div);
-
-  // Move the selection inside the newly created div
-  range.setStart(div, 0);
-  range.setEnd(div, 0);
-  selection.removeAllRanges();
-  selection.addRange(range);
-}
   /**
    * toggles editor buttons when cursor moved or positioning
    *
@@ -390,7 +372,7 @@ private insertDivParagraph(): void {
   exec() {
     this.editorToolbar().triggerButtons();
 
-    let userSelection;
+    let userSelection: any;
     if (this.doc.getSelection) {
       userSelection = this.doc.getSelection();
       this.editorService.executeInNextQueueIteration(this.editorService.saveSelection);

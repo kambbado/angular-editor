@@ -1,8 +1,9 @@
 import { Injectable, inject } from '@angular/core';
-import {HttpClient, HttpEvent} from '@angular/common/http';
-import {Observable} from 'rxjs';
-import {DOCUMENT} from '@angular/common';
-import {CustomClass} from './config';
+import { HttpClient, HttpEvent } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { DOCUMENT } from '@angular/common';
+import { CustomClass } from './config';
+import { ExecCommandReplacement } from './utils';
 
 export interface UploadResponse {
   imageUrl: string;
@@ -27,11 +28,14 @@ export class AngularEditorService {
   executeCommand(command: string, value?: string) {
     const commands = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'pre'];
     if (commands.includes(command)) {
-      this.doc.execCommand('formatBlock', false, command);
+      //this.doc.execCommand('formatBlock', false, command);
+      ExecCommandReplacement.formatBlock(command);
       return;
     }
-    this.doc.execCommand(command, false, value);
+    ExecCommandReplacement.replaceExecCommand(command, value);
+    //this.doc.execCommand(command, false, value);
   }
+
 
   /**
    * Create URL link
@@ -39,7 +43,8 @@ export class AngularEditorService {
    */
   createLink(url: string) {
     if (!url.includes('http')) {
-      this.doc.execCommand('createlink', false, url);
+      //this.doc.execCommand('createlink', false, url);
+      ExecCommandReplacement.insertLink(url);
     } else {
       const newUrl = '<a href="' + url + '" target="_blank">' + this.selectedText + '</a>';
       this.insertHtml(newUrl);
@@ -56,9 +61,11 @@ export class AngularEditorService {
     const restored = this.restoreSelection();
     if (restored) {
       if (where === 'textColor') {
-        this.doc.execCommand('foreColor', false, color);
+        ExecCommandReplacement.replaceInsertColor(color);
+        //this.doc.execCommand('foreColor', false, color);
       } else {
-        this.doc.execCommand('hiliteColor', false, color);
+        ExecCommandReplacement.replaceHighlightColorWithSpan(color);
+        //this.doc.execCommand('hiliteColor', false, color);
       }
     }
   }
@@ -68,7 +75,8 @@ export class AngularEditorService {
    * @param fontName string
    */
   setFontName(fontName: string) {
-    this.doc.execCommand('fontName', false, fontName);
+    ExecCommandReplacement.replaceFontNameWithSpan(fontName);
+    //this.doc.execCommand('fontName', false, fontName);
   }
 
   /**
@@ -76,7 +84,8 @@ export class AngularEditorService {
    * @param fontSize string
    */
   setFontSize(fontSize: string) {
-    this.doc.execCommand('fontSize', false, fontSize);
+    ExecCommandReplacement.replaceFontNameWithSpan(fontSize);
+    //this.doc.execCommand('fontSize', false, fontSize);
   }
 
   /**
@@ -84,8 +93,8 @@ export class AngularEditorService {
    * @param html HTML string
    */
   insertHtml(html: string): void {
-
-    const isHTMLInserted = this.doc.execCommand('insertHTML', false, html);
+    const isHTMLInserted = ExecCommandReplacement.replaceInsertHTML(html);
+    //const isHTMLInserted = this.doc.execCommand('insertHTML', false, html);
 
     if (!isHTMLInserted) {
       throw new Error('Unable to perform the operation');
@@ -130,7 +139,7 @@ export class AngularEditorService {
   /**
    * setTimeout used for execute 'saveSelection' method in next event loop iteration
    */
-  public executeInNextQueueIteration(callbackFn: (...args: any[]) => any, timeout:any = 1e2): void {
+  public executeInNextQueueIteration(callbackFn: (...args: any[]) => any, timeout: any = 1e2): void {
     setTimeout(callbackFn, timeout);
   }
 
@@ -167,11 +176,13 @@ export class AngularEditorService {
    * @param imageUrl The imageUrl.
    */
   insertImage(imageUrl: string) {
-    this.doc.execCommand('insertImage', false, imageUrl);
+    ExecCommandReplacement.replaceInsertImage(imageUrl);
+    //this.doc.execCommand('insertImage', false, imageUrl);
   }
 
   setDefaultParagraphSeparator(separator: string) {
-    this.doc.execCommand('defaultParagraphSeparator', false, separator);
+    //this.doc.execCommand('defaultParagraphSeparator', false, separator);
+    ExecCommandReplacement.defaultParagraphSeparator(separator);
   }
 
   createCustomClass(customClass: CustomClass) {
@@ -207,7 +218,7 @@ export class AngularEditorService {
   }
 
   private insertVimeoVideoTag(videoUrl: string): void {
-    const sub = this.http.get<any>(`https://vimeo.com/api/oembed.json?url=${videoUrl}`).subscribe((data:any) => {
+    const sub = this.http.get<any>(`https://vimeo.com/api/oembed.json?url=${videoUrl}`).subscribe((data: any) => {
       const imageUrl = data.thumbnail_url_with_play_button;
       const thumbnail = `<div>
         <a href='${videoUrl}' target='_blank'>
@@ -244,7 +255,7 @@ export class AngularEditorService {
     } else {
       // Iterate nodes until we hit the end container
       while (node && node !== endNode) {
-        rangeNodes.push( node = this.nextNode(node) );
+        rangeNodes.push(node = this.nextNode(node));
       }
 
       // Add partially selected nodes at the start of the range
