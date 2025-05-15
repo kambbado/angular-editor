@@ -21,7 +21,7 @@
     (execute)="executeCommand($event)"
   >
     <ng-container
-      [ngTemplateOutlet]="customButtonsTemplateRef"
+      [ngTemplateOutlet]="customButtonsTemplateRef()"
       [ngTemplateOutletContext]="{ executeCommandFn: this.executeCommandFn}"
     >
     </ng-container>
@@ -42,7 +42,7 @@
       [style.minHeight]="config.minHeight"
       [style.maxHeight]="config.maxHeight"
       [style.outline]="config.outline === false ? 'none': undefined"
-      (input)="onContentChange($event.target)"
+      (input)="onContentChange($event)"
       (focus)="onTextAreaFocus($event)"
       (blur)="onTextAreaBlur($event)"
       (click)="exec()"

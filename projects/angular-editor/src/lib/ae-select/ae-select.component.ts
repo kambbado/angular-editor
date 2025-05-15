@@ -1,19 +1,6 @@
-import {
-  Component,
-  ElementRef,
-  EventEmitter,
-  forwardRef,
-  HostBinding,
-  HostListener,
-  Input,
-  OnInit,
-  Output,
-  Renderer2,
-  ViewChild,
-  ViewEncapsulation
-} from '@angular/core';
-import {ControlValueAccessor, NG_VALUE_ACCESSOR} from '@angular/forms';
-import {isDefined} from '../utils';
+import { ChangeDetectionStrategy, Component, ElementRef, forwardRef, HostBinding, HostListener, inject, Input, OnInit, output, Renderer2, viewChild } from '@angular/core';
+import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { isDefined } from '../utils';
 
 export interface SelectOption {
   label: string;
@@ -24,18 +11,22 @@ export interface SelectOption {
   selector: 'ae-select',
   templateUrl: './ae-select.component.html',
   styleUrls: ['./ae-select.component.scss'],
-  //encapsulation: ViewEncapsulation.None,
+  changeDetection:  ChangeDetectionStrategy.OnPush,
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
       useExisting: forwardRef(() => AeSelectComponent),
       multi: true,
     }
-  ]
+  ],
+  standalone: false
 })
 export class AeSelectComponent implements OnInit, ControlValueAccessor {
+  private elRef = inject(ElementRef);
+  private r = inject(Renderer2);
+
   @Input() options: SelectOption[] = [];
-  // eslint-disable-next-line @angular-eslint/no-input-rename
+
   @Input('hidden') isHidden: boolean;
 
   selectedOption: SelectOption;
@@ -54,15 +45,10 @@ export class AeSelectComponent implements OnInit, ControlValueAccessor {
 
   @HostBinding('style.display') hidden = 'inline-block';
 
-  // eslint-disable-next-line @angular-eslint/no-output-native, @angular-eslint/no-output-rename
-  @Output('change') changeEvent = new EventEmitter();
 
-  @ViewChild('labelButton', {static: true}) labelButton: ElementRef;
+  readonly changeEvent = output<string>({ alias: 'change' });
 
-  constructor(private elRef: ElementRef,
-              private r: Renderer2,
-  ) {
-  }
+  readonly labelButton = viewChild<ElementRef>('labelButton');
 
   ngOnInit() {
     this.selectedOption = this.options[0];
@@ -108,20 +94,28 @@ export class AeSelectComponent implements OnInit, ControlValueAccessor {
     this.opened = false;
   }
 
+/*************  ✨ Windsurf Command ⭐  *************/
+/**
+ * Returns the current open state of the select component.
+ *
+ * @returns A boolean indicating if the select component is open.
+ */
+
+/*******  62e72532-e3ef-47c4-b143-4bbaf0055b57  *******/
   get isOpen(): boolean {
     return this.opened;
   }
 
-  writeValue(value) {
+  writeValue(value: any) {
     if (!value || typeof value !== 'string') {
       return;
     }
     this.setValue(value);
   }
 
-  setValue(value) {
+  setValue(value: any) {
     let index = 0;
-    const selectedEl = this.options.find((el, i) => {
+    const selectedEl = this.options.find((el:SelectOption, i:number) => {
       index = i;
       return el.value === value;
     });
@@ -132,21 +126,21 @@ export class AeSelectComponent implements OnInit, ControlValueAccessor {
   }
 
   onChange: any = () => {
-  }
+  };
   onTouched: any = () => {
-  }
+  };
 
-  registerOnChange(fn) {
+  registerOnChange(fn: any) {
     this.onChange = fn;
   }
 
-  registerOnTouched(fn) {
+  registerOnTouched(fn: any) {
     this.onTouched = fn;
   }
 
   setDisabledState(isDisabled: boolean): void {
-    this.labelButton.nativeElement.disabled = isDisabled;
-    const div = this.labelButton.nativeElement;
+    this.labelButton().nativeElement.disabled = isDisabled;
+    const div = this.labelButton().nativeElement;
     const action = isDisabled ? 'addClass' : 'removeClass';
     this.r[action](div, 'disabled');
     this.disabled = isDisabled;
@@ -188,27 +182,27 @@ export class AeSelectComponent implements OnInit, ControlValueAccessor {
     // }
   }
 
-  _handleArrowDown($event) {
+  _handleArrowDown($event: any) {
     if (this.optionId < this.options.length - 1) {
       this.optionId++;
     }
   }
 
-  _handleArrowUp($event) {
+  _handleArrowUp($event: any) {
     if (this.optionId >= 1) {
       this.optionId--;
     }
   }
 
-  _handleSpace($event) {
+  _handleSpace($event: any) {
 
   }
 
-  _handleEnter($event) {
+  _handleEnter($event: any) {
     this.optionSelect(this.options[this.optionId], $event);
   }
 
-  _handleTab($event) {
+  _handleTab($event: any) {
 
   }
 

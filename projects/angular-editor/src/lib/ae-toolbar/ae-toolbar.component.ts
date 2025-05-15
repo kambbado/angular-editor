@@ -1,29 +1,25 @@
-import {
-  Component,
-  ElementRef,
-  EventEmitter,
-  Inject,
-  Input,
-  Output,
-  Renderer2,
-  ViewChild,
-  ViewEncapsulation
-} from '@angular/core';
-import {AngularEditorService, UploadResponse} from '../angular-editor.service';
-import {HttpEvent, HttpResponse} from '@angular/common/http';
-import {DOCUMENT} from '@angular/common';
-import {CustomClass} from '../config';
-import {SelectOption} from '../ae-select/ae-select.component';
-import {Observable} from 'rxjs';
+import { DOCUMENT } from '@angular/common';
+import { HttpEvent, HttpResponse } from '@angular/common/http';
+import { ChangeDetectionStrategy, Component, ElementRef, Input, Renderer2, inject, output, viewChild } from '@angular/core';
+import { Observable } from 'rxjs';
+import { SelectOption } from '../ae-select/ae-select.component';
+import { AngularEditorService, UploadResponse } from '../angular-editor.service';
+import { CustomClass } from '../config';
 
 @Component({
   selector: 'angular-editor-toolbar, ae-toolbar, div[aeToolbar]',
   templateUrl: './ae-toolbar.component.html',
   styleUrls: ['./ae-toolbar.component.scss'],
-  //encapsulation: ViewEncapsulation.None,
+  standalone: false,
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 
 export class AeToolbarComponent {
+  private r = inject(Renderer2);
+  private editorService = inject(AngularEditorService);
+  private er = inject(ElementRef);
+  private doc = inject(DOCUMENT);
+
   htmlMode = false;
   linkSelected = false;
   block = 'default';
@@ -107,9 +103,9 @@ export class AeToolbarComponent {
   ];
 
   customClassId = '-1';
-  // eslint-disable-next-line @typescript-eslint/naming-convention, no-underscore-dangle, id-blacklist, id-match
+
   _customClasses: CustomClass[];
-  customClassList: SelectOption[] = [{label: '', value: ''}];
+  customClassList: SelectOption[] = [{ label: '', value: '' }];
   // uploadUrl: string;
 
   tagMap = {
@@ -126,14 +122,14 @@ export class AeToolbarComponent {
   @Input() uploadUrl: string;
   @Input() upload: (file: File) => Observable<HttpEvent<UploadResponse>>;
   @Input() showToolbar: boolean;
-  @Input() fonts: SelectOption[] = [{label: '', value: ''}];
+  @Input() fonts: SelectOption[] = [{ label: '', value: '' }];
 
   @Input()
   set customClasses(classes: CustomClass[]) {
     if (classes) {
       this._customClasses = classes;
-      this.customClassList = this._customClasses.map((x, i) => ({label: x.name, value: i.toString()}));
-      this.customClassList.unshift({label: 'Clear Class', value: '-1'});
+      this.customClassList = this._customClasses.map((x: CustomClass, i: number) => ({ label: x.name, value: i.toString() }));
+      this.customClassList.unshift({ label: 'Clear Class', value: '-1' });
     }
   }
 
@@ -153,20 +149,12 @@ export class AeToolbarComponent {
 
   @Input() hiddenButtons: string[][];
 
-  @Output() execute: EventEmitter<string> = new EventEmitter<string>();
+  readonly execute = output<string>();
 
-  @ViewChild('fileInput', {static: true}) myInputFile: ElementRef;
+  readonly myInputFile = viewChild<ElementRef>('fileInput');
 
   public get isLinkButtonDisabled(): boolean {
     return this.htmlMode || !Boolean(this.editorService.selectedText);
-  }
-
-  constructor(
-    private r: Renderer2,
-    private editorService: AngularEditorService,
-    private er: ElementRef,
-    @Inject(DOCUMENT) private doc: any
-  ) {
   }
 
   /**
@@ -184,15 +172,14 @@ export class AeToolbarComponent {
     if (!this.showToolbar) {
       return;
     }
-    this.buttons.forEach(e => {
-      const result = this.doc.queryCommandState(e);
-      const elementById = this.doc.getElementById(e + '-' + this.id);
-      if (result) {
-        this.r.addClass(elementById, 'active');
-      } else {
+
+    const selection = this.doc.getSelection();
+    if (!selection || selection.rangeCount === 0) {
+      this.buttons.forEach((e: string) => {
+        const elementById = this.doc.getElementById(e + '-' + this.id);
         this.r.removeClass(elementById, 'active');
-      }
-    });
+      });
+    }
   }
 
   /**
@@ -202,10 +189,10 @@ export class AeToolbarComponent {
     if (!this.showToolbar) {
       return;
     }
-    this.linkSelected = nodes.findIndex(x => x.nodeName === 'A') > -1;
+    this.linkSelected = nodes.findIndex((x: Node) => x.nodeName === 'A') > -1;
     let found = false;
-    this.select.forEach(y => {
-      const node = nodes.find(x => x.nodeName === y);
+    this.select.forEach((y: string) => {
+      const node = nodes.find((x: Node) => x.nodeName === y);
       if (node !== undefined && y === node.nodeName) {
         if (found === false) {
           this.block = node.nodeName.toLowerCase();
@@ -218,8 +205,8 @@ export class AeToolbarComponent {
 
     found = false;
     if (this._customClasses) {
-      this._customClasses.forEach((y, index) => {
-        const node = nodes.find(x => {
+      this._customClasses.forEach((y: CustomClass, index: number) => {
+        const node = nodes.find((x: Node) => {
           if (x instanceof Element) {
             return x.className === y.class;
           }
@@ -235,9 +222,9 @@ export class AeToolbarComponent {
       });
     }
 
-    Object.keys(this.tagMap).map(e => {
+    Object.keys(this.tagMap).map((e: string) => {
       const elementById = this.doc.getElementById(this.tagMap[e] + '-' + this.id);
-      const node = nodes.find(x => x.nodeName === e);
+      const node = nodes.find((x: Node) => x.nodeName === e);
       if (node !== undefined && e === node.nodeName) {
         this.r.addClass(elementById, 'active');
       } else {
@@ -245,12 +232,100 @@ export class AeToolbarComponent {
       }
     });
 
-    this.foreColour = this.doc.queryCommandValue('ForeColor');
-    this.fontSize = this.doc.queryCommandValue('FontSize');
-    this.fontName = this.doc.queryCommandValue('FontName').replace(/"/g, '');
-    this.backColor = this.doc.queryCommandValue('backColor');
+    this.foreColour = this.getForeColor();
+    this.fontSize = this.getFontSize();
+    this.fontName = this.getFontName()?.replace(/"/g, '');
+    this.backColor = this.getBackColor;
   }
 
+  getFontName(): string | null {
+    const selection = this.doc.getSelection();
+    if (!selection || selection.rangeCount === 0) {
+      return null; // No selection
+    }
+
+    const range = selection.getRangeAt(0);
+    const startNode = range.startContainer;
+
+    // Find the closest element node in the selection
+    let element = startNode instanceof Element ? startNode : startNode.parentElement;
+
+    while (element) {
+      const fontName = this.doc.defaultView?.getComputedStyle(element).fontFamily;
+      if (fontName) {
+        return fontName;
+      }
+      element = element.parentElement;
+    }
+
+    return null; // No font name found in the ancestors
+  }
+  getFontSize(): string | null {
+    const selection = this.doc.getSelection();
+    if (!selection || selection.rangeCount === 0) {
+      return null; // No selection
+    }
+
+    const range = selection.getRangeAt(0);
+    const startNode = range.startContainer;
+
+    // Find the closest element node in the selection
+    let element = startNode instanceof Element ? startNode : startNode.parentElement;
+
+    while (element) {
+      const fontSize = this.doc.defaultView?.getComputedStyle(element).fontSize;
+      if (fontSize) {
+        return fontSize;
+      }
+      element = element.parentElement;
+    }
+
+    return null; // No color found in the ancestors
+  }
+  getBackColor(): string | null {
+    const selection = this.doc.getSelection();
+    if (!selection || selection.rangeCount === 0) {
+      return null; // No selection
+    }
+
+    const range = selection.getRangeAt(0);
+    const startNode = range.startContainer;
+    // Find the closest element node in the selection
+    let element = startNode instanceof Element ? startNode : startNode.parentElement;
+
+    while (element) {
+      const backColor = this.doc.defaultView?.getComputedStyle(element).backgroundColor;
+      if (backColor) {
+        return backColor;
+      }
+      element = element.parentElement;
+    }
+
+    return null; // No color found in the ancestors
+  }
+
+  getForeColor(): string | null {
+    const selection = this.doc.getSelection();
+    if (!selection || selection.rangeCount === 0) {
+      return null; // No selection
+    }
+
+    const range = selection.getRangeAt(0);
+    const startNode = range.startContainer;
+
+    // Find the closest element node in the selection
+    let element = startNode instanceof Element ? startNode : startNode.parentElement;
+
+    while (element) {
+      const color = this.doc.defaultView?.getComputedStyle(element).color;
+      if (color) {
+        return color;
+      }
+      element = element.parentElement;
+    }
+
+    return null; // No color found in the ancestors
+  }
   /**
    * insert URL link
    */
@@ -274,8 +349,8 @@ export class AeToolbarComponent {
    */
   insertVideo() {
     this.execute.emit('');
-    const url = prompt('Insert Video link', `https://`);
-    if (url && url !== '' && url !== `https://`) {
+    const url = prompt('Insert Video link', 'https://');
+    if (url && url !== '' && url !== 'https://') {
       this.editorService.insertVideo(url);
     }
   }
@@ -321,28 +396,31 @@ export class AeToolbarComponent {
   /**
    * Upload image when file is selected.
    */
-  onFileChanged(event) {
-    const file = event.target.files[0];
-    if (file.type.includes('image/')) {
-      if (this.upload) {
-        this.upload(file).subscribe((response: HttpResponse<UploadResponse>) => this.watchUploadImage(response, event));
-      } else if (this.uploadUrl) {
-        this.editorService.uploadImage(file).subscribe((response: HttpResponse<UploadResponse>) => this.watchUploadImage(response, event));
-      } else {
-        const reader = new FileReader();
-        reader.onload = (e: ProgressEvent) => {
-          const fr = e.currentTarget as FileReader;
-          this.editorService.insertImage(fr.result.toString());
-        };
-        reader.readAsDataURL(file);
+  onFileChanged(event: Event): void {
+    const inputElement = event.target as HTMLInputElement;
+    if (inputElement.files && inputElement.files.length > 0) {
+      const selectedFile: File = inputElement.files[0]; // Access the first selected file
+      if (selectedFile.type.includes('image/')) {
+        if (this.upload) {
+          this.upload(selectedFile).subscribe((response: HttpResponse<UploadResponse>) => this.watchUploadImage(response, event));
+        } else if (this.uploadUrl) {
+          this.editorService.uploadImage(selectedFile).subscribe((response: HttpResponse<UploadResponse>) => this.watchUploadImage(response, event));
+        } else {
+          const reader = new FileReader();
+          reader.onload = (e: ProgressEvent) => {
+            const fr = e.currentTarget as FileReader;
+            this.editorService.insertImage(fr.result.toString());
+          };
+          reader.readAsDataURL(selectedFile);
+        }
       }
     }
   }
 
-  watchUploadImage(response: HttpResponse<{ imageUrl: string }>, event) {
-    const {imageUrl} = response.body;
+  watchUploadImage(response: HttpResponse<{ imageUrl: string }>, event: Event) {
+    const { imageUrl } = response.body;
     this.editorService.insertImage(imageUrl);
-    event.srcElement.value = null;
+    (event.target as HTMLInputElement).value = null;
   }
 
   /**
@@ -366,7 +444,7 @@ export class AeToolbarComponent {
     let result: any;
     for (const arr of this.hiddenButtons) {
       if (arr instanceof Array) {
-        result = arr.find(item => item === name);
+        result = arr.find((item: string) => item === name);
       }
       if (result) {
         break;
@@ -377,6 +455,6 @@ export class AeToolbarComponent {
 
   focus() {
     this.execute.emit('focus');
-    console.log('focused');
+    console.warn('focused');
   }
 }

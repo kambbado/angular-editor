@@ -1,4 +1,4 @@
-import {Inject, Injectable} from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import {HttpClient, HttpEvent} from '@angular/common/http';
 import {Observable} from 'rxjs';
 import {DOCUMENT} from '@angular/common';
@@ -10,16 +10,14 @@ export interface UploadResponse {
 
 @Injectable()
 export class AngularEditorService {
+  private http = inject(HttpClient);
+  private doc = inject(DOCUMENT);
+
 
   savedSelection: Range | null;
   selectedText: string;
   uploadUrl: string;
   uploadWithCredentials: boolean;
-
-  constructor(
-    private http: HttpClient,
-    @Inject(DOCUMENT) private doc: any
-  ) { }
 
   /**
    * Executed command from editor header buttons exclude toggleEditorMode

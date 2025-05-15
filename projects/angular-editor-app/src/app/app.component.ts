@@ -1,15 +1,19 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AngularEditorConfig } from 'angular-editor';
 
-const ANGULAR_EDITOR_LOGO_URL = 'https://raw.githubusercontent.com/kolkov/angular-editor/master/docs/angular-editor-logo.png?raw=true'
+const ANGULAR_EDITOR_LOGO_URL = 'https://raw.githubusercontent.com/kolkov/angular-editor/master/docs/angular-editor-logo.png?raw=true';
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss']
+  styleUrls: ['./app.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: true,
 })
 export class AppComponent implements OnInit {
+  private formBuilder = inject(FormBuilder);
+
   title = 'app';
 
   form: FormGroup;
@@ -81,24 +85,22 @@ export class AppComponent implements OnInit {
     ]
   };
 
-  constructor(private formBuilder: FormBuilder) {}
-
   ngOnInit() {
     this.form = this.formBuilder.group({
       signature: ['', Validators.required]
     });
-    console.log(this.htmlContent1);
+    console.warn(this.htmlContent1);
   }
 
-  onChange(event) {
-    console.log('changed');
+  onChange(event: Event) {
+    console.warn('changed');
   }
 
-  onBlur(event) {
-    console.log('blur ' + event);
+  onBlur(event: FocusEvent) {
+    console.warn('blur ' + event);
   }
 
-  onChange2(event) {
+  onChange2(event: Event) {
     console.warn(this.form.value);
   }
 }

@@ -36,11 +36,11 @@ describe('AngularEditorComponent', () => {
 
     const dataTransfer = new DataTransfer();
 
-    const clipboardEvent = new ClipboardEvent("paste", {
+    const clipboardEvent = new ClipboardEvent('paste', {
       clipboardData: dataTransfer,
     });
-    clipboardEvent.clipboardData.setData("text/plain", rawText);
-    clipboardEvent.clipboardData.setData("text/html", htmlText);
+    clipboardEvent.clipboardData.setData('text/plain', rawText);
+    clipboardEvent.clipboardData.setData('text/html', htmlText);
 
     const outputRawText = component.onPaste(clipboardEvent);
 

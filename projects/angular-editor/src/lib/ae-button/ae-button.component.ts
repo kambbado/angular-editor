@@ -1,15 +1,16 @@
-import {Component, Input, ViewEncapsulation} from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 
 @Component({
   selector: 'ae-button, button[aeButton]',
   templateUrl: './ae-button.component.html',
   styleUrls: ['./ae-button.component.scss'],
-  //encapsulation: ViewEncapsulation.None,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     'class': 'angular-editor-button',
     '[tabIndex]': '-1',
     '[type]': '"button"',
-  }
+  },
+  standalone: false
 })
 export class AeButtonComponent {
 
