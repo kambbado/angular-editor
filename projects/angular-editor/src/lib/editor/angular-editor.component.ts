@@ -1,12 +1,16 @@
 import { DOCUMENT } from '@angular/common';
 import {
-  AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, contentChild, ElementRef, forwardRef,
-  HostAttributeToken, HostBinding, HostListener, inject, OnDestroy, OnInit,
-  output, Output, Renderer2, SecurityContext, TemplateRef,
-  viewChild,
+  AfterViewInit,
+  Attribute,
+  ChangeDetectionStrategy, ChangeDetectorRef, Component, contentChild, ElementRef, forwardRef,
+  HostBinding, HostListener, inject,
   input,
   InputSignal,
-  signal
+  OnDestroy, OnInit,
+  output, Output, Renderer2, SecurityContext,
+  signal,
+  TemplateRef,
+  viewChild
 } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { DomSanitizer } from '@angular/platform-browser';
@@ -36,7 +40,7 @@ export class AngularEditorComponent implements OnInit, ControlValueAccessor, Aft
   private doc = inject(DOCUMENT);
   private sanitizer = inject(DomSanitizer);
   private cdRef = inject(ChangeDetectorRef);
-  private autoFocus = inject(new HostAttributeToken('autofocus'));
+
 
 
   private onChange: (value: string) => void;
@@ -86,9 +90,10 @@ export class AngularEditorComponent implements OnInit, ControlValueAccessor, Aft
     this.focus();
   }
 
-  constructor() {
-    const defaultTabIndex = inject(new HostAttributeToken('tabindex'));
-
+  constructor(
+    @Attribute('tabindex') defaultTabIndex: string,
+    @Attribute('autofocus') private autoFocus: any
+  ) {
     const parsedTabIndex = Number(defaultTabIndex);
     this.processedTabIndex.set(parsedTabIndex || parsedTabIndex === 0 ? parsedTabIndex : null);
   }

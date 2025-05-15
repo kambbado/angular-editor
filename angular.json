@@ -64,7 +64,6 @@
           "options": {
             "outputPath": "dist/angular-editor-app",
             "index": "projects/angular-editor-app/src/index.html",
-            "main": "projects/angular-editor-app/src/main.ts",
             "polyfills": [
               "@angular/localize/init"
             ],
@@ -83,9 +82,7 @@
               "projects/angular-editor/themes/default.scss"
             ],
             "scripts": [],
-            "vendorChunk": true,
             "extractLicenses": false,
-            "buildOptimizer": false,
             "sourceMap": true,
             "optimization": false,
             "namedChunks": true
@@ -103,8 +100,6 @@
               "sourceMap": false,
               "namedChunks": false,
               "extractLicenses": true,
-              "vendorChunk": false,
-              "buildOptimizer": true,
               "budgets": [
                 {
                   "type": "initial",

@@ -6,7 +6,7 @@
     </svg>
   </button>
   <span class="ae-picker-options">
-    @for (item of options(); track item; let i = $index) {
+    @for (item of options(); track item.label; let i = $index) {
     <span type="button" role="button" class="ae-picker-item"
       [class]="{'selected': item.value === value, 'focused': i === optionId}"
       (mousedown)="optionSelect(item, $event)">

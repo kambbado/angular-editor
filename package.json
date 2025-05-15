@@ -1,6 +1,7 @@
 {
-  "name": "@ramp/angular-editor-19",
-  "version": "3.0.0-beta.10",
+  "name": "@ramp/angular-editor",
+  "version": "3.0.0-beta.13",
+  "description": "A simple native WYSIWYG editor for Angular 19+. Rich Text editor component for Angular",
   "scripts": {
     "ng": "ng",
     "start": "nx serve",

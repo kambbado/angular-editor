@@ -7,7 +7,10 @@ export function isDefined(value: any) {
 }
 
 export class ExecCommandReplacement {
-  private static doc = inject(DOCUMENT);
+
+   private static get doc(): Document {
+    return inject(DOCUMENT);
+  }
 
   private static getSelectionAndRange(): { selection: Selection | null; range: Range | null } {
     const selection = this.doc.getSelection();
