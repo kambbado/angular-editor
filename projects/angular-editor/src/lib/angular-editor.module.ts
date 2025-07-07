@@ -5,8 +5,10 @@ import { FaIconLibrary, FontAwesomeModule } from '@fortawesome/angular-fontaweso
 import {
   faAlignCenter, faAlignJustify, faAlignLeft, faAlignRight, faBold,
   faCode, faFont, faImage, faIndent, faItalic, faLink, faLinkSlash, faListOl,
-  faListUl, faMinus, faOutdent, faRepeat, faStrikethrough, faSubscript,
-  faUnderline, faUndo, faVideo, faXmark, fas
+  faListUl, faMinus, faOutdent, faRepeat,
+  fas,
+  faStrikethrough, faSubscript,
+  faUnderline, faUndo, faVideo, faXmark
 } from '@fortawesome/free-solid-svg-icons';
 import { AeButtonComponent } from './ae-button/ae-button.component';
 import { AeSelectComponent } from './ae-select/ae-select.component';
@@ -23,18 +25,18 @@ import { AngularEditorComponent } from './editor/angular-editor.component';
     AeButtonComponent,
     AeToolbarSetComponent],
   exports: [
+    AeSelectComponent,
     AngularEditorComponent,
     AeToolbarComponent,
     AeButtonComponent,
     AeToolbarSetComponent]
 })
 export class AngularEditorModule {
-  library: FaIconLibrary = inject(FaIconLibrary);
-  constructor() {
-
+    constructor() {
+    const library: FaIconLibrary = inject(FaIconLibrary);
     // Add an icon to the library for convenient access in other components
-    this.library.addIconPacks(fas);
-    this.library.addIcons(faUndo, faRepeat, faBold, faItalic, faUnderline,
+    library.addIconPacks(fas);
+    library.addIcons(faUndo, faRepeat, faBold, faItalic, faUnderline,
       faStrikethrough, faSubscript, faAlignLeft, faAlignCenter,
       faAlignRight, faAlignJustify,
       faIndent, faOutdent, faListUl, faListOl, faFont, faLink,
