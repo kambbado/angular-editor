@@ -64,9 +64,7 @@
           "options": {
             "outputPath": "dist/angular-editor-app",
             "index": "projects/angular-editor-app/src/index.html",
-            "polyfills": [
-              "@angular/localize/init"
-            ],
+            "browser": "projects/angular-editor-app/src/main.ts",
             "tsConfig": "projects/angular-editor-app/tsconfig.app.json",
             "assets": [
               "projects/angular-editor-app/src/favicon.ico",
@@ -111,6 +109,12 @@
                   "maximumWarning": "6kb"
                 }
               ]
+            },
+            "development": {
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": true,
+              "namedChunks": true
             }
           }
         },
@@ -124,7 +128,7 @@
               "buildTarget": "angular-editor-app:build:production"
             },
             "development": {
-              "buildTarget": "portal-web:build:development"
+              "buildTarget": "angular-editor-app:build:development"
             }
           },
           "defaultConfiguration": "development"

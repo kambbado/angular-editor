@@ -14,7 +14,6 @@ export class AngularEditorService {
   private http = inject(HttpClient);
   private doc = inject(DOCUMENT);
 
-
   savedSelection: Range | null;
   selectedText: string;
   uploadUrl: string;

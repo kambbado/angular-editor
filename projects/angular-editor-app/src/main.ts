@@ -1,28 +1,66 @@
-import { NgModuleRef, enableProdMode } from '@angular/core';
-import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
 
-import { AppModule } from './app/app.module';
-import { environment } from './environments/environment';
+import { provideHttpClient, withFetch, withInterceptorsFromDi } from '@angular/common/http';
+import { ApplicationConfig, ApplicationRef, enableProdMode, InjectionToken, NgModuleRef, provideZonelessChangeDetection } from '@angular/core';
+import { bootstrapApplication } from '@angular/platform-browser';
+import { AppComponent } from './app/app.component';
+import { environment } from './environments/environment.prod';
 
-export function getBaseUrl() {
-  return document.getElementsByTagName('base')[0].href;
+export interface EnvironmentConfig {
+  production: boolean;
 }
 
-const providers = [{ provide: 'BASE_URL', useFactory: getBaseUrl, deps: [] }];
+export const ENVIRONMENT_CONFIG = new InjectionToken<EnvironmentConfig>('ENVIRONMENT_CONFIG');
 
+/**
+ * Retrieves the base URL from the HTML base tag
+ * @returns The base URL as string
+ */
+export function getBaseUrl(): string {
+  const baseTag = document.getElementsByTagName('base')[0];
+  if (!baseTag) {
+    throw new Error('Base tag not found in HTML document');
+  }
+  return baseTag.href;
+}
+
+// Enable production mode if environment specifies it
 if (environment.production) {
   enableProdMode();
 }
 
-platformBrowserDynamic(providers)
-  .bootstrapModule(AppModule)
-  .then((ref: NgModuleRef<AppModule>) => {
-    // Ensure Angular destroys itself on hot reloads.
-    if (window['ngRef']) {
-      window['ngRef'].destroy();
+export const appConfig: ApplicationConfig = {
+  providers: [
+
+    // Core services
+    { provide: 'BASE_URL', useFactory: getBaseUrl },
+
+    provideHttpClient(withInterceptorsFromDi(), withFetch()),
+
+    // Performance
+    provideZonelessChangeDetection(),
+
+    // Environment
+    { provide: ENVIRONMENT_CONFIG, useValue: environment },
+  ],
+};
+
+type AppWindow = Window & {
+  ngRef?: NgModuleRef<unknown>;
+};
+
+/**
+ * Bootstrap the Angular application
+ */
+bootstrapApplication(AppComponent, appConfig)
+  .then((appRef: ApplicationRef) => {
+    const appWindow = window as AppWindow;
+
+    if (appWindow.ngRef) {
+      appWindow.ngRef.destroy();
     }
-    window['ngRef'] = ref;
+    appWindow.ngRef = appRef.injector.get(NgModuleRef);
   })
-  .catch((err: any) => {
-    console.error(err);
+  .catch((error: Error) => {
+    console.error('Application failed to start:', error);
+    throw error;
   });

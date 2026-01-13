@@ -384,7 +384,7 @@ export class AeToolbarComponent {
    * @param m boolean
    */
   setEditorMode(m: boolean) {
-    const toggleEditorModeButton = this.doc.getElementById('toggleEditorMode' + '-' + this.id());
+    const toggleEditorModeButton = this.er.nativeElement.querySelector('[id="toggleEditorMode-' + this.id() + '"]');
     if (m) {
       this.r.addClass(toggleEditorModeButton, 'active');
     } else {
@@ -403,9 +403,17 @@ export class AeToolbarComponent {
       if (selectedFile.type.includes('image/')) {
         const upload = this.upload();
         if (upload) {
-          upload(selectedFile).subscribe((response: HttpResponse<UploadResponse>) => this.watchUploadImage(response, event));
+          upload(selectedFile).subscribe((response: HttpEvent<UploadResponse>) => {
+            if (response instanceof HttpResponse) {
+              this.watchUploadImage(response, event);
+            }
+          });
         } else if (this.uploadUrl()) {
-          this.editorService.uploadImage(selectedFile).subscribe((response: HttpResponse<UploadResponse>) => this.watchUploadImage(response, event));
+          this.editorService.uploadImage(selectedFile).subscribe((response: HttpEvent<UploadResponse>) => {
+            if (response instanceof HttpResponse) {
+              this.watchUploadImage(response, event);
+            }
+          });
         } else {
           const reader = new FileReader();
           reader.onload = (e: ProgressEvent) => {

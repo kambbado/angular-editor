@@ -8,7 +8,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
   host: {
     'class': 'angular-editor-button',
     '[tabIndex]': '-1',
-    '[type]': '"button"',
+    '[attr.type]': '"button"',
   },
   standalone: false
 })
