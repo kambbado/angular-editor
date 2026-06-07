@@ -1,22 +1,19 @@
-import {Component, Input, ViewEncapsulation} from '@angular/core';
+import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 
 @Component({
-    selector: 'ae-button, button[aeButton]',
-    templateUrl: './ae-button.component.html',
-    styleUrls: ['./ae-button.component.scss'],
-    //encapsulation: ViewEncapsulation.None,
-    host: {
-        'class': 'angular-editor-button',
-        '[tabIndex]': '-1',
-        '[type]': '"button"',
-    },
-    standalone: false
+  selector: 'ae-button, button[aeButton]',
+  templateUrl: './ae-button.component.html',
+  styleUrls: ['./ae-button.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    class: 'angular-editor-button',
+    '[attr.tabindex]': '"-1"',
+    '[attr.type]': '"button"',
+  },
+  standalone: true,
 })
 export class AeButtonComponent {
+  readonly iconName = input('');
 
-  @Input() iconName = '';
-
-  constructor() {
-  }
-
+  constructor() {}
 }

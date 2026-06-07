@@ -1,8 +1,10 @@
-<ng-container *ngIf="iconName; else contentTemplate">
+@if (iconName()) {
   <svg>
-    <use [attr.href]="'assets/ae-icons/icons.svg#' + iconName" [attr.xlink:href]="'assets/ae-icons/icons.svg#' + iconName"></use>
+    <use
+      [attr.href]="'assets/ae-icons/icons.svg#' + iconName()"
+      [attr.xlink:href]="'assets/ae-icons/icons.svg#' + iconName()"
+    ></use>
   </svg>
-</ng-container>
-<ng-template #contentTemplate>
-  <ng-content></ng-content>
-</ng-template>
+} @else {
+  <ng-content />
+}

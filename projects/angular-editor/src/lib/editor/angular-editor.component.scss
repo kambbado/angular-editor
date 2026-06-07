@@ -1,4 +1,4 @@
-@import "../styles";
+@use "../styles";
 
 .angular-editor {
   display: flex;
@@ -9,7 +9,7 @@
     flex-direction: column-reverse;
   }
 
-  ::ng-deep [contenteditable=true]:empty:before {
+  ::ng-deep [contenteditable="true"]:empty:before {
     content: attr(placeholder);
     color: #868e96;
     opacity: 1;
@@ -32,7 +32,7 @@
         width: 8px;
         height: 8px;
         cursor: nwse-resize;
-        background-color: rgba(255, 255, 255, 0.5)
+        background-color: rgba(255, 255, 255, 0.5);
       }
     }
 
@@ -48,7 +48,10 @@
 
       &:focus,
       &.focus {
-        outline: var(--ae-focus-outline-color, -webkit-focus-ring-color auto 1px);
+        outline: var(
+          --ae-focus-outline-color,
+          -webkit-focus-ring-color auto 1px
+        );
       }
 
       ::ng-deep blockquote {

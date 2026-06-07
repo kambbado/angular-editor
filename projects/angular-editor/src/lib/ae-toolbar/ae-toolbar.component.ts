@@ -1,37 +1,57 @@
+import { DOCUMENT } from '@angular/common';
+import { HttpEvent, HttpResponse } from '@angular/common/http';
 import {
+  ChangeDetectionStrategy,
   Component,
   ElementRef,
-  EventEmitter,
-  Inject,
-  Input,
-  Output,
   Renderer2,
-  ViewChild,
-  ViewEncapsulation,
-  DOCUMENT
+  computed,
+  inject,
+  input,
+  OnInit,
+  output,
+  viewChild,
 } from '@angular/core';
-import {AngularEditorService, UploadResponse} from '../angular-editor.service';
-import {HttpEvent, HttpResponse} from '@angular/common/http';
-
-import {CustomClass} from '../config';
-import {SelectOption} from '../ae-select/ae-select.component';
-import {Observable} from 'rxjs';
+import { FormsModule } from '@angular/forms';
+import { Observable } from 'rxjs';
+import { AeButtonComponent } from '../ae-button/ae-button.component';
+import {
+  AeSelectComponent,
+  SelectOption,
+} from '../ae-select/ae-select.component';
+import { AeToolbarSetComponent } from '../ae-toolbar-set/ae-toolbar-set.component';
+import {
+  AngularEditorService,
+  UploadResponse,
+} from '../angular-editor.service';
+import { CustomClass } from '../config';
 
 @Component({
-    selector: 'angular-editor-toolbar, ae-toolbar, div[aeToolbar]',
-    templateUrl: './ae-toolbar.component.html',
-    styleUrls: ['./ae-toolbar.component.scss'],
-    standalone: false
+  selector: 'angular-editor-toolbar, ae-toolbar, div[aeToolbar]',
+  templateUrl: './ae-toolbar.component.html',
+  styleUrls: ['./ae-toolbar.component.scss'],
+  imports: [
+    FormsModule,
+    AeButtonComponent,
+    AeSelectComponent,
+    AeToolbarSetComponent,
+  ],
+  standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
+export class AeToolbarComponent implements OnInit {
+  private readonly r = inject(Renderer2);
+  private readonly editorService = inject(AngularEditorService);
+  private readonly er = inject(ElementRef);
+  private readonly doc = inject(DOCUMENT);
 
-export class AeToolbarComponent {
   htmlMode = false;
   linkSelected = false;
   block = 'default';
   fontName = 'Times New Roman';
   fontSize = '3';
-  foreColour;
-  backColor;
+  foreColour: string | null = null;
+  backColor: string | null = null;
 
   headings: SelectOption[] = [
     {
@@ -64,16 +84,16 @@ export class AeToolbarComponent {
     },
     {
       label: 'Predefined',
-      value: 'pre'
+      value: 'pre',
     },
     {
       label: 'Standard',
-      value: 'div'
+      value: 'div',
     },
     {
       label: 'default',
-      value: 'default'
-    }
+      value: 'default',
+    },
   ];
 
   fontSizes: SelectOption[] = [
@@ -104,70 +124,78 @@ export class AeToolbarComponent {
     {
       label: '7',
       value: '7',
-    }
+    },
   ];
 
   customClassId = '-1';
-  // eslint-disable-next-line no-underscore-dangle, id-blacklist, id-match
-  _customClasses: CustomClass[];
-  customClassList: SelectOption[] = [{label: '', value: ''}];
+
+  readonly customClassList = computed(() => {
+    const classes = this.customClasses() ?? [];
+    const list: SelectOption[] = classes.map((x, i) => ({
+      label: x.name,
+      value: i.toString(),
+    }));
+    list.unshift({ label: 'Clear Class', value: '-1' });
+    return list;
+  });
+
   // uploadUrl: string;
 
-  tagMap = {
+  tagMap: Record<string, string> = {
     BLOCKQUOTE: 'indent',
-    A: 'link'
+    A: 'link',
   };
 
   select = ['H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'P', 'PRE', 'DIV'];
 
-  buttons = ['bold', 'italic', 'underline', 'strikeThrough', 'subscript', 'superscript', 'justifyLeft', 'justifyCenter',
-    'justifyRight', 'justifyFull', 'indent', 'outdent', 'insertUnorderedList', 'insertOrderedList', 'link'];
+  buttons = [
+    'bold',
+    'italic',
+    'underline',
+    'strikeThrough',
+    'subscript',
+    'superscript',
+    'justifyLeft',
+    'justifyCenter',
+    'justifyRight',
+    'justifyFull',
+    'indent',
+    'outdent',
+    'insertUnorderedList',
+    'insertOrderedList',
+    'link',
+  ];
 
-  @Input() id: string;
-  @Input() uploadUrl: string;
-  @Input() upload: (file: File) => Observable<HttpEvent<UploadResponse>>;
-  @Input() showToolbar: boolean;
-  @Input() fonts: SelectOption[] = [{label: '', value: ''}];
+  readonly id = input<string | undefined>(undefined);
+  readonly uploadUrl = input<string | undefined>(undefined);
+  readonly upload = input<
+    ((file: File) => Observable<HttpEvent<UploadResponse>>) | undefined
+  >(undefined);
+  readonly showToolbar = input<boolean | undefined>(undefined);
+  readonly fonts = input<SelectOption[]>([{ label: '', value: '' }]);
+  readonly customClasses = input<CustomClass[] | undefined>(undefined);
+  readonly defaultFontName = input<string | undefined>(undefined);
+  readonly defaultFontSize = input<string | undefined>(undefined);
 
-  @Input()
-  set customClasses(classes: CustomClass[]) {
-    if (classes) {
-      this._customClasses = classes;
-      this.customClassList = this._customClasses.map((x, i) => ({label: x.name, value: i.toString()}));
-      this.customClassList.unshift({label: 'Clear Class', value: '-1'});
+  ngOnInit(): void {
+    const fontName = this.defaultFontName();
+    if (fontName) {
+      this.fontName = fontName;
+    }
+    const fontSize = this.defaultFontSize();
+    if (fontSize) {
+      this.fontSize = fontSize;
     }
   }
 
-  @Input()
-  set defaultFontName(value: string) {
-    if (value) {
-      this.fontName = value;
-    }
-  }
+  readonly hiddenButtons = input<string[][] | undefined>(undefined);
 
-  @Input()
-  set defaultFontSize(value: string) {
-    if (value) {
-      this.fontSize = value;
-    }
-  }
+  readonly execute = output<string>();
 
-  @Input() hiddenButtons: string[][];
-
-  @Output() execute: EventEmitter<string> = new EventEmitter<string>();
-
-  @ViewChild('fileInput', {static: true}) myInputFile: ElementRef;
+  readonly myInputFile = viewChild<ElementRef>('fileInput');
 
   public get isLinkButtonDisabled(): boolean {
-    return this.htmlMode || !Boolean(this.editorService.selectedText);
-  }
-
-  constructor(
-    private r: Renderer2,
-    private editorService: AngularEditorService,
-    private er: ElementRef,
-    @Inject(DOCUMENT) private doc: any
-  ) {
+    return this.htmlMode || !this.editorService.selectedText;
   }
 
   /**
@@ -182,32 +210,31 @@ export class AeToolbarComponent {
    * highlight editor buttons when cursor moved or positioning
    */
   triggerButtons() {
-    if (!this.showToolbar) {
+    if (!this.showToolbar()) {
       return;
     }
-    this.buttons.forEach(e => {
-      const result = this.doc.queryCommandState(e);
-      const elementById = this.doc.getElementById(e + '-' + this.id);
-      if (result) {
-        this.r.addClass(elementById, 'active');
-      } else {
+
+    const selection = this.doc.getSelection();
+    if (!selection || selection.rangeCount === 0) {
+      this.buttons.forEach((e: string) => {
+        const elementById = this.doc.getElementById(e + '-' + this.id());
         this.r.removeClass(elementById, 'active');
-      }
-    });
+      });
+    }
   }
 
   /**
    * trigger highlight editor buttons when cursor moved or positioning in block
    */
   triggerBlocks(nodes: Node[]) {
-    if (!this.showToolbar) {
+    if (!this.showToolbar()) {
       return;
     }
-    this.linkSelected = nodes.findIndex(x => x.nodeName === 'A') > -1;
+    this.linkSelected = nodes.some((x: Node) => x.nodeName === 'A');
     let found = false;
-    this.select.forEach(y => {
-      const node = nodes.find(x => x.nodeName === y);
-      if (node !== undefined && y === node.nodeName) {
+    this.select.forEach((y: string) => {
+      const node = nodes.find((x: Node) => x.nodeName === y);
+      if (y === node?.nodeName) {
         if (found === false) {
           this.block = node.nodeName.toLowerCase();
           found = true;
@@ -218,12 +245,14 @@ export class AeToolbarComponent {
     });
 
     found = false;
-    if (this._customClasses) {
-      this._customClasses.forEach((y, index) => {
-        const node = nodes.find(x => {
+    const customClasses = this.customClasses() ?? [];
+    if (customClasses.length > 0) {
+      customClasses.forEach((y: CustomClass, index: number) => {
+        const node = nodes.find((x: Node) => {
           if (x instanceof Element) {
             return x.className === y.class;
           }
+          return false;
         });
         if (node !== undefined) {
           if (found === false) {
@@ -236,39 +265,137 @@ export class AeToolbarComponent {
       });
     }
 
-    Object.keys(this.tagMap).map(e => {
-      const elementById = this.doc.getElementById(this.tagMap[e] + '-' + this.id);
-      const node = nodes.find(x => x.nodeName === e);
-      if (node !== undefined && e === node.nodeName) {
+    Object.keys(this.tagMap).forEach((e: string) => {
+      const elementById = this.doc.getElementById(
+        this.tagMap[e] + '-' + this.id(),
+      );
+      const node = nodes.find((x: Node) => x.nodeName === e);
+      if (e === node?.nodeName) {
         this.r.addClass(elementById, 'active');
       } else {
         this.r.removeClass(elementById, 'active');
       }
     });
 
-    this.foreColour = this.doc.queryCommandValue('ForeColor');
-    this.fontSize = this.doc.queryCommandValue('FontSize');
-    this.fontName = this.doc.queryCommandValue('FontName').replace(/"/g, '');
-    this.backColor = this.doc.queryCommandValue('backColor');
+    this.foreColour = this.getForeColor();
+    this.fontSize = this.getFontSize() ?? this.fontSize;
+    this.fontName = this.getFontName()?.replaceAll('"', '') ?? this.fontName;
+    this.backColor = this.getBackColor();
   }
 
+  getFontName(): string | null {
+    const selection = this.doc.getSelection();
+    if (!selection || selection.rangeCount === 0) {
+      return null; // No selection
+    }
+
+    const range = selection.getRangeAt(0);
+    const startNode = range.startContainer;
+
+    // Find the closest element node in the selection
+    let element =
+      startNode instanceof Element ? startNode : startNode.parentElement;
+
+    while (element) {
+      const fontName =
+        this.doc.defaultView?.getComputedStyle(element).fontFamily;
+      if (fontName) {
+        return fontName;
+      }
+      element = element.parentElement;
+    }
+
+    return null; // No font name found in the ancestors
+  }
+  getFontSize(): string | null {
+    const selection = this.doc.getSelection();
+    if (!selection || selection.rangeCount === 0) {
+      return null; // No selection
+    }
+
+    const range = selection.getRangeAt(0);
+    const startNode = range.startContainer;
+
+    // Find the closest element node in the selection
+    let element =
+      startNode instanceof Element ? startNode : startNode.parentElement;
+
+    while (element) {
+      const fontSize = this.doc.defaultView?.getComputedStyle(element).fontSize;
+      if (fontSize) {
+        return fontSize;
+      }
+      element = element.parentElement;
+    }
+
+    return null; // No color found in the ancestors
+  }
+  getBackColor(): string | null {
+    const selection = this.doc.getSelection();
+    if (!selection || selection.rangeCount === 0) {
+      return null; // No selection
+    }
+
+    const range = selection.getRangeAt(0);
+    const startNode = range.startContainer;
+    // Find the closest element node in the selection
+    let element =
+      startNode instanceof Element ? startNode : startNode.parentElement;
+
+    while (element) {
+      const backColor =
+        this.doc.defaultView?.getComputedStyle(element).backgroundColor;
+      if (backColor) {
+        return backColor;
+      }
+      element = element.parentElement;
+    }
+
+    return null; // No color found in the ancestors
+  }
+
+  getForeColor(): string | null {
+    const selection = this.doc.getSelection();
+    if (!selection || selection.rangeCount === 0) {
+      return null; // No selection
+    }
+
+    const range = selection.getRangeAt(0);
+    const startNode = range.startContainer;
+
+    // Find the closest element node in the selection
+    let element =
+      startNode instanceof Element ? startNode : startNode.parentElement;
+
+    while (element) {
+      const color = this.doc.defaultView?.getComputedStyle(element).color;
+      if (color) {
+        return color;
+      }
+      element = element.parentElement;
+    }
+
+    return null; // No color found in the ancestors
+  }
   /**
    * insert URL link
    */
   insertUrl() {
-    let url = 'https:\/\/';
+    let url = 'https://';
     const selection = this.editorService.savedSelection;
-    if (selection && selection.commonAncestorContainer.parentElement.nodeName === 'A') {
-      const parent = selection.commonAncestorContainer.parentElement as HTMLAnchorElement;
-      // Use getAttribute to preserve relative URLs instead of href which returns absolute URL
-      const href = parent.getAttribute('href');
-      if (href !== '' && href !== null) {
-        url = href;
+    if (
+      selection &&
+      selection.commonAncestorContainer.parentElement?.nodeName === 'A'
+    ) {
+      const parent = selection.commonAncestorContainer
+        .parentElement as HTMLAnchorElement;
+      if (parent.href !== '') {
+        url = parent.href;
       }
     }
-    url = prompt('Insert URL link', url);
-    if (url && url !== '' && url !== 'https://') {
-      this.editorService.createLink(url);
+    const promptUrl = prompt('Insert URL link', url);
+    if (promptUrl && promptUrl !== '' && promptUrl !== 'https://') {
+      this.editorService.createLink(promptUrl);
     }
   }
 
@@ -277,8 +404,8 @@ export class AeToolbarComponent {
    */
   insertVideo() {
     this.execute.emit('');
-    const url = prompt('Insert Video link', `https://`);
-    if (url && url !== '' && url !== `https://`) {
+    const url = prompt('Insert Video link', 'https://');
+    if (url && url !== '' && url !== 'https://') {
       this.editorService.insertVideo(url);
     }
   }
@@ -312,7 +439,9 @@ export class AeToolbarComponent {
    * @param m boolean
    */
   setEditorMode(m: boolean) {
-    const toggleEditorModeButton = this.doc.getElementById('toggleEditorMode' + '-' + this.id);
+    const toggleEditorModeButton = this.doc.getElementById(
+      'toggleEditorMode' + '-' + this.id(),
+    );
     if (m) {
       this.r.addClass(toggleEditorModeButton, 'active');
     } else {
@@ -324,30 +453,52 @@ export class AeToolbarComponent {
   /**
    * Upload image when file is selected.
    */
-  onFileChanged(event) {
-    const file = event.target.files[0];
-    if (file.type.includes('image/')) {
-      if (this.upload) {
-        this.upload(file).subscribe((response: HttpResponse<UploadResponse>) => this.watchUploadImage(response, event));
-      } else if (this.uploadUrl) {
-        this.editorService.uploadImage(file).subscribe((response: HttpResponse<UploadResponse>) => this.watchUploadImage(response, event));
-      } else {
-        const reader = new FileReader();
-        reader.onload = (e: ProgressEvent) => {
-          const fr = e.currentTarget as FileReader;
-          this.editorService.insertImage(fr.result.toString());
-          // Reset input value to allow re-uploading the same file
-          event.target.value = null;
-        };
-        reader.readAsDataURL(file);
+  onFileChanged(event: Event): void {
+    const inputElement = event.target as HTMLInputElement;
+    if (inputElement.files && inputElement.files.length > 0) {
+      const selectedFile: File = inputElement.files[0]; // Access the first selected file
+      if (selectedFile.type.includes('image/')) {
+        const upload = this.upload();
+        if (upload) {
+          upload(selectedFile).subscribe(
+            (response: HttpEvent<UploadResponse>) => {
+              if (response instanceof HttpResponse) {
+                this.watchUploadImage(response, event);
+              }
+            },
+          );
+        } else if (this.uploadUrl()) {
+          this.editorService
+            .uploadImage(selectedFile)
+            .subscribe((response: HttpEvent<UploadResponse>) => {
+              if (response instanceof HttpResponse) {
+                this.watchUploadImage(response, event);
+              }
+            });
+        } else {
+          const reader = new FileReader();
+          reader.onload = (e: ProgressEvent) => {
+            const fr = e.currentTarget as FileReader;
+            if (typeof fr.result === 'string') {
+              this.editorService.insertImage(fr.result);
+            }
+          };
+          reader.readAsDataURL(selectedFile);
+        }
       }
     }
   }
 
-  watchUploadImage(response: HttpResponse<{ imageUrl: string }>, event) {
-    const {imageUrl} = response.body;
+  watchUploadImage(
+    response: HttpResponse<{ imageUrl: string }>,
+    event: Event,
+  ): void {
+    const imageUrl = response.body?.imageUrl;
+    if (!imageUrl) {
+      return;
+    }
     this.editorService.insertImage(imageUrl);
-    event.srcElement.value = null;
+    (event.target as HTMLInputElement).value = '';
   }
 
   /**
@@ -357,7 +508,10 @@ export class AeToolbarComponent {
     if (classId === '-1') {
       this.execute.emit('clear');
     } else {
-      this.editorService.createCustomClass(this._customClasses[+classId]);
+      const classes = this.customClasses();
+      if (classes) {
+        this.editorService.createCustomClass(classes[+classId]);
+      }
     }
   }
 
@@ -365,13 +519,14 @@ export class AeToolbarComponent {
     if (!name) {
       return false;
     }
-    if (!(this.hiddenButtons instanceof Array)) {
+    const hiddenButtons = this.hiddenButtons();
+    if (!Array.isArray(hiddenButtons)) {
       return false;
     }
-    let result: any;
-    for (const arr of this.hiddenButtons) {
-      if (arr instanceof Array) {
-        result = arr.find(item => item === name);
+    let result: string | undefined;
+    for (const arr of hiddenButtons) {
+      if (Array.isArray(arr)) {
+        result = arr.find((item: string) => item === name);
       }
       if (result) {
         break;
@@ -382,5 +537,6 @@ export class AeToolbarComponent {
 
   focus() {
     this.execute.emit('focus');
+    console.warn('focused');
   }
 }

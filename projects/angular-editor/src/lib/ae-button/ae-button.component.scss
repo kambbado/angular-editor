@@ -1,4 +1,4 @@
-@import "../styles";
+@use "../styles";
 
 :host {
   &.angular-editor-button {
@@ -28,7 +28,7 @@
     }
 
     &:disabled {
-      background-color: var(--ae-button-disabled-bg-color,#f5f5f5);
+      background-color: var(--ae-button-disabled-bg-color, #f5f5f5);
       pointer-events: none;
       cursor: not-allowed;
 
@@ -57,4 +57,3 @@
     }
   }
 }
-

@@ -1,28 +1,40 @@
-import {ComponentFixture, TestBed, waitForAsync} from '@angular/core/testing';
+import { Component } from '@angular/core';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import {AngularEditorComponent} from './angular-editor.component';
-import {AeToolbarComponent} from '../ae-toolbar/ae-toolbar.component';
-import {FormsModule} from '@angular/forms';
-import {HttpClientModule} from '@angular/common/http';
-import {AeSelectComponent} from '../ae-select/ae-select.component';
-import {AngularEditorModule} from '../angular-editor.module';
+import { AngularEditorComponent } from './angular-editor.component';
+import { HttpClientModule } from '@angular/common/http';
+import { By } from '@angular/platform-browser';
+import { AngularEditorConfig, angularEditorConfig } from '../config';
+import { vi } from 'vitest';
+
+@Component({
+  standalone: true,
+  imports: [AngularEditorComponent],
+  template:
+    '<angular-editor autofocus tabindex="0" [config]="config"></angular-editor>',
+})
+class HostComponent {
+  config: AngularEditorConfig = { ...angularEditorConfig };
+}
 
 describe('AngularEditorComponent', () => {
   let component: AngularEditorComponent;
-  let fixture: ComponentFixture<AngularEditorComponent>;
+  let fixture: ComponentFixture<HostComponent>;
+  let hostComponent: HostComponent;
 
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
-      imports: [ FormsModule, HttpClientModule],
-      declarations: [AngularEditorComponent, AeToolbarComponent, AeSelectComponent]
-    })
-      .compileComponents();
-  }));
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [HostComponent, HttpClientModule],
+    }).compileComponents();
+  });
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(AngularEditorComponent);
-    component = fixture.componentInstance;
+    fixture = TestBed.createComponent(HostComponent);
+    hostComponent = fixture.componentInstance;
     fixture.detectChanges();
+    component = fixture.debugElement.query(
+      By.directive(AngularEditorComponent),
+    ).componentInstance;
   });
 
   it('should create', () => {
@@ -32,18 +44,30 @@ describe('AngularEditorComponent', () => {
   it('should paste raw text', () => {
     const htmlText = '<h1>Hello!</h1>';
     const rawText = 'Hello!';
-    component.config.rawPaste = true;
+    hostComponent.config = { ...hostComponent.config, rawPaste: true };
+    fixture.detectChanges();
 
-    const dataTransfer = new DataTransfer();
-
-    const clipboardEvent = new ClipboardEvent("paste", {
-      clipboardData: dataTransfer,
+    const execSpy = vi.fn((..._args: any[]) => true);
+    const previousExec = (document as any).execCommand;
+    Object.defineProperty(document, 'execCommand', {
+      value: execSpy,
+      configurable: true,
     });
-    clipboardEvent.clipboardData.setData("text/plain", rawText);
-    clipboardEvent.clipboardData.setData("text/html", htmlText);
+
+    const clipboardEvent = {
+      preventDefault: vi.fn(),
+      clipboardData: {
+        getData: (type: string) => (type === 'text/plain' ? rawText : htmlText),
+      },
+    } as unknown as ClipboardEvent;
 
     const outputRawText = component.onPaste(clipboardEvent);
 
     expect(outputRawText).toEqual(rawText);
+    expect(execSpy).toHaveBeenCalledWith('insertHTML', false, rawText);
+    Object.defineProperty(document, 'execCommand', {
+      value: previousExec,
+      configurable: true,
+    });
   });
 });

@@ -1,27 +1,34 @@
-import { NgModuleRef, enableProdMode } from "@angular/core";
-import { platformBrowserDynamic } from "@angular/platform-browser-dynamic";
+import { ApplicationRef, enableProdMode } from '@angular/core';
+import { bootstrapApplication } from '@angular/platform-browser';
+import { provideHttpClient } from '@angular/common/http';
 
-import { AppModule } from "./app/app.module";
-import { environment } from "./environments/environment";
+import { AppComponent } from './app/app.component';
+import { environment } from './environments/environment';
 
 export function getBaseUrl() {
-  return document.getElementsByTagName("base")[0].href;
+  return document.getElementsByTagName('base')[0].href;
 }
 
-const providers = [{ provide: "BASE_URL", useFactory: getBaseUrl, deps: [] }];
+const providers = [
+  { provide: 'BASE_URL', useFactory: getBaseUrl, deps: [] },
+  provideHttpClient(),
+];
 
 if (environment.production) {
   enableProdMode();
 }
 
-platformBrowserDynamic(providers)
-  .bootstrapModule(AppModule)
-  .then((ref: NgModuleRef<AppModule>) => {
+bootstrapApplication(AppComponent, { providers })
+  .then((ref: ApplicationRef) => {
+    const appWindow = globalThis as typeof globalThis & {
+      ngRef?: ApplicationRef;
+    };
+
     // Ensure Angular destroys itself on hot reloads.
-    if (window["ngRef"]) {
-      window["ngRef"].destroy();
+    if (appWindow.ngRef) {
+      appWindow.ngRef.destroy();
     }
-    window["ngRef"] = ref;
+    appWindow.ngRef = ref;
   })
   .catch((err: any) => {
     console.error(err);

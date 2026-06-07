@@ -1,4 +1,4 @@
-@import "../styles";
+@use "../styles";
 
 svg {
   width: 100%;
@@ -36,13 +36,17 @@ svg {
   height: 2rem;
 
   &:before {
-    content: '';
+    content: "";
     position: absolute;
     right: 0;
     top: 0;
     width: 20px;
     height: 100%;
-    background: linear-gradient(to right, var(--ae-picker-label-color, white), var(--ae-picker-label-color, white) 100%);
+    background: linear-gradient(
+      to right,
+      var(--ae-picker-label-color, white),
+      var(--ae-picker-label-color, white) 100%
+    );
   }
 
   &:focus {
@@ -71,8 +75,11 @@ svg {
 
   svg {
     position: absolute;
-    right: 0;
+    right: 4px;
+    top: 50%;
+    transform: translateY(-50%);
     width: 1rem;
+    height: 1rem;
 
     &:not(:root) {
       overflow: hidden;
@@ -119,7 +126,7 @@ svg {
     }
 
     &:hover {
-      background-color: var(--ae-picker-option-hover-bg-color,#fffa98);
+      background-color: var(--ae-picker-option-hover-bg-color, #fffa98);
     }
   }
 }
@@ -152,5 +159,3 @@ svg {
     border-color: #ccc;
   }
 }
-
-

@@ -2,6 +2,7 @@
   "$schema": "http://json.schemastore.org/tsconfig",
   "compileOnSave": false,
   "compilerOptions": {
+    "strict": true,
     "composite": false,
     "noFallthroughCasesInSwitch": true,
     "pretty": true,
@@ -10,7 +11,8 @@
     "outDir": "./dist/out-tsc",
     "sourceMap": true,
     "declaration": false,
-    "moduleResolution": "node",
+    "ignoreDeprecations": "6.0",
+    "moduleResolution": "bundler",
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "importHelpers": true,
@@ -28,13 +30,8 @@
     }
   },
   "include": ["src", "projects"],
-  "exclude": [
-    "**/*.spec.ts",
-    "./node_modules/*",
-    "dist"
-  ],
+  "exclude": ["**/*.spec.ts", "./node_modules/*", "dist"],
   "angularCompilerOptions": {
-    "disableTypeScriptVersionCheck": true,
     "annotateForClosureCompiler": true,
     "strictTemplates": true,
     "strictInputTypes": true,
@@ -53,13 +50,6 @@
     "strictInjectionParameters": true,
     "enableI18nLegacyMessageIdFormat": false,
     "strictInputAccessModifiers": true,
-    "extendedDiagnostics": {
-      "checks": {
-        "invalidBananaInBox": "error",
-        "nullishCoalescingNotNullable": "warning"
-      },
-      "defaultCategory": "error"
-    },
     "esModuleInterop": true
   },
   "references": [

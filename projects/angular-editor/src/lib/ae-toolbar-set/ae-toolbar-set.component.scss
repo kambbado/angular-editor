@@ -1,4 +1,4 @@
-@import "../styles";
+@use "../styles";
 
 :host {
   &.angular-editor-toolbar-set {
@@ -9,6 +9,8 @@
   }
 }
 
-.angular-editor-toolbar-set:not([style*="display:none"]):not([style*="display: none"]){
+.angular-editor-toolbar-set:not([style*="display:none"]):not(
+    [style*="display: none"]
+  ) {
   //display: inline-block;
 }

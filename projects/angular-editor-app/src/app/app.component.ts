@@ -1,19 +1,47 @@
-import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { AngularEditorConfig } from '@kolkov/angular-editor';
+import { CommonModule } from '@angular/common';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  inject,
+} from '@angular/core';
+import {
+  FormBuilder,
+  FormGroup,
+  FormControl,
+  FormsModule,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
+import { AngularEditorConfig } from 'angular-editor';
+import { AngularEditorComponent } from '../../../angular-editor/src/lib/editor/angular-editor.component';
+import { AeToolbarSetComponent } from '../../../angular-editor/src/lib/ae-toolbar-set/ae-toolbar-set.component';
+import { AeButtonComponent } from '../../../angular-editor/src/lib/ae-button/ae-button.component';
 
-const ANGULAR_EDITOR_LOGO_URL = 'https://raw.githubusercontent.com/kolkov/angular-editor/master/docs/angular-editor-logo.png?raw=true'
+const ANGULAR_EDITOR_LOGO_URL =
+  'https://raw.githubusercontent.com/kolkov/angular-editor/master/docs/angular-editor-logo.png?raw=true';
 
 @Component({
-    selector: 'app-root',
-    templateUrl: './app.component.html',
-    styleUrls: ['./app.component.scss'],
-    standalone: false
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    AngularEditorComponent,
+    AeToolbarSetComponent,
+    AeButtonComponent,
+  ],
+  standalone: true,
 })
 export class AppComponent implements OnInit {
+  private readonly formBuilder = inject(FormBuilder);
+
   title = 'app';
 
-  form: FormGroup;
+  form!: FormGroup<{ signature: FormControl<string | null> }>;
 
   htmlContent1 = '';
   htmlContent2 = '';
@@ -40,7 +68,7 @@ export class AppComponent implements OnInit {
       },
       {
         name: 'redText',
-        class: 'redText'
+        class: 'redText',
       },
       {
         name: 'titleText',
@@ -48,10 +76,7 @@ export class AppComponent implements OnInit {
         tag: 'h1',
       },
     ],
-    toolbarHiddenButtons: [
-      ['bold', 'italic'],
-    ],
-    textDirection: 'auto'
+    toolbarHiddenButtons: [['bold', 'italic']],
   };
 
   config2: AngularEditorConfig = {
@@ -73,34 +98,32 @@ export class AppComponent implements OnInit {
       },
       {
         name: 'redText',
-        class: 'redText'
+        class: 'redText',
       },
       {
         name: 'titleText',
         class: 'titleText',
         tag: 'h1',
       },
-    ]
+    ],
   };
-
-  constructor(private formBuilder: FormBuilder) {}
 
   ngOnInit() {
     this.form = this.formBuilder.group({
-      signature: ['', Validators.required]
+      signature: ['', Validators.required],
     });
-    console.log(this.htmlContent1);
+    console.warn(this.htmlContent1);
   }
 
-  onChange(event) {
-    console.log('changed');
+  onChange(event: string | Event) {
+    console.warn('changed');
   }
 
-  onBlur(event) {
-    console.log('blur ' + event);
+  onBlur(event: FocusEvent) {
+    console.warn('blur', event);
   }
 
-  onChange2(event) {
+  onChange2(event: Event) {
     console.warn(this.form.value);
   }
 }
