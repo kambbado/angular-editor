@@ -1,18 +1,18 @@
 <p align="center">
-  <img width="150px" src="https://raw.githubusercontent.com/kolkov/angular-editor/master/docs/angular-editor-logo.png?raw=true" alt="AngularEditor logo"/>
+  <img width="150px" src="https://raw.githubusercontent.com/kolkov/angular-editor/main/docs/angular-editor-logo.png?raw=true" alt="AngularEditor logo"/>
 </p>
 
 # AngularEditor
 [![npm version](https://badge.fury.io/js/%40kolkov%2Fangular-editor.svg)](https://badge.fury.io/js/%40kolkov%2Fangular-editor)
+[![npm](https://img.shields.io/npm/v/@kolkov/angular-editor.svg)](https://www.npmjs.com/package/@kolkov/angular-editor)
+[![CI](https://github.com/kolkov/angular-editor/actions/workflows/publish.yml/badge.svg)](https://github.com/kolkov/angular-editor/actions/workflows/publish.yml)
+[![npm downloads](https://img.shields.io/npm/dm/@kolkov/angular-editor.svg)](https://www.npmjs.com/package/@kolkov/angular-editor)
 [![demo](https://img.shields.io/badge/demo-StackBlitz-blueviolet.svg)](https://stackblitz.com/edit/angular-editor-wysiwyg)
-[![Build Status](https://travis-ci.com/kolkov/angular-editor.svg?branch=master)](https://travis-ci.com/kolkov/angular-editor)
-[![npm](https://img.shields.io/npm/dm/@kolkov/angular-editor.svg)](https://www.npmjs.com/package/@kolkov/angular-editor)
 [![](https://data.jsdelivr.com/v1/package/npm/@kolkov/angular-editor/badge?style=rounded)](https://www.jsdelivr.com/package/npm/@kolkov/angular-editor)
-[![Coverage Status](https://coveralls.io/repos/github/kolkov/angular-editor/badge.svg?branch=master)](https://coveralls.io/github/kolkov/angular-editor?branch=master)
-[![codecov](https://codecov.io/gh/kolkov/angular-editor/branch/master/graph/badge.svg)](https://codecov.io/gh/kolkov/angular-editor)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://paypal.me/AndreyKolkov)
 
-A simple native WYSIWYG/Rich Text editor for Angular 6-19+
+A simple native WYSIWYG/Rich Text editor for Angular 20+
 
 ![Nov-27-2019 17-26-29](https://user-images.githubusercontent.com/216412/69763434-259cd800-113b-11ea-918f-0565ebce0e48.gif)
 
@@ -30,15 +30,20 @@ Install via [npm][npm] package manager
 npm install @kolkov/angular-editor --save
 ```
 ### Versions
-3.0.0 and above - for Angular v13+ (removed Font Awesome icons deps + CSS variables)
+3.0.0 and above - for Angular v20+ (CSS variables, modern Angular 20)
 
-2.0.0 and above - for Angular v13.x.x and above
+2.0.0 and above - for Angular v13-19
 
-1.0.0 and above - for Angular v8.x.x and above
+1.0.0 and above - for Angular v8-12
 
 0.18.4 and above - for Angular v7.x.x
 
 0.15.x - for Angular v6.x.x
+
+**Note:** Version 3.0.0 requires:
+- Angular 20.0.0 or higher (also compatible with Angular 21)
+- RxJS 7.8.0 or higher
+- TypeScript 5.4 or higher
 
 Attention! `alpha` and `beta` versions may contain breaking changes.
 
@@ -323,9 +328,9 @@ Icons from Ligature Symbols Icons Collection [icons]
 
 ## Contributing
 
-Please read through our [contributing guidelines](https://github.com/kolkov/angular-editor/blob/master/CONTRIBUTING.md). Included are directions for opening issues, coding standards, and notes on development.
+Please read through our [contributing guidelines](https://github.com/kolkov/angular-editor/blob/main/CONTRIBUTING.md). Included are directions for opening issues, coding standards, and notes on development.
 
-Editor preferences are available in the [editor config](https://github.com/kolkov/angular-editor/blob/master/.editorconfig) for easy use in common text editors. Read more and download plugins at <http://editorconfig.org>.
+Editor preferences are available in the [editor config](https://github.com/kolkov/angular-editor/blob/main/.editorconfig) for easy use in common text editors. Read more and download plugins at <http://editorconfig.org>.
 
 ## Versioning
 
