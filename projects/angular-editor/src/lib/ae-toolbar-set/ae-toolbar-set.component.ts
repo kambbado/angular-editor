@@ -6,13 +6,10 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
   styleUrls: ['./ae-toolbar-set.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
-    'class': 'angular-editor-toolbar-set'
+    class: 'angular-editor-toolbar-set',
   },
-  standalone: false
+  standalone: true,
 })
 export class AeToolbarSetComponent {
-
-  constructor() {
-  }
-
+  constructor() {}
 }

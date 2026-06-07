@@ -1,46 +1,72 @@
-import { DOCUMENT } from '@angular/common';
+import { CommonModule, DOCUMENT } from '@angular/common';
 import {
-  AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, contentChild, ElementRef, forwardRef,
-  HostAttributeToken, HostBinding, HostListener, inject, OnDestroy, OnInit,
-  output, Output, Renderer2, SecurityContext, TemplateRef,
-  viewChild,
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  contentChild,
+  ElementRef,
+  forwardRef,
+  HostAttributeToken,
+  inject,
   input,
   InputSignal,
-  signal
+  model,
+  OnDestroy,
+  OnInit,
+  output,
+  Renderer2,
+  SecurityContext,
+  signal,
+  TemplateRef,
+  viewChild,
 } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { DomSanitizer } from '@angular/platform-browser';
 import { AeToolbarComponent } from '../ae-toolbar/ae-toolbar.component';
 import { AngularEditorService } from '../angular-editor.service';
-import { AngularEditorConfig, angularEditorConfig, CustomClass, Font } from '../config';
+import {
+  AngularEditorConfig,
+  angularEditorConfig,
+  CustomClass,
+  Font,
+} from '../config';
 import { isDefined } from '../utils';
 
 @Component({
   selector: 'angular-editor',
   templateUrl: './angular-editor.component.html',
   styleUrls: ['./angular-editor.component.scss'],
+  imports: [CommonModule, AeToolbarComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
       useExisting: forwardRef(() => AngularEditorComponent),
-      multi: true
+      multi: true,
     },
-    AngularEditorService
+    AngularEditorService,
   ],
-  standalone: false
+  standalone: true,
+  host: {
+    '[attr.tabindex]': 'processedTabIndex()',
+    '(focus)': 'onFocus()',
+  },
 })
-export class AngularEditorComponent implements OnInit, ControlValueAccessor, AfterViewInit, OnDestroy {
-  private r = inject(Renderer2);
-  private editorService = inject(AngularEditorService);
-  private doc = inject(DOCUMENT);
-  private sanitizer = inject(DomSanitizer);
-  private cdRef = inject(ChangeDetectorRef);
-  private autoFocus = inject(new HostAttributeToken('autofocus'));
+export class AngularEditorComponent
+  implements OnInit, ControlValueAccessor, AfterViewInit, OnDestroy
+{
+  private readonly r = inject(Renderer2);
+  private readonly editorService = inject(AngularEditorService);
+  private readonly doc = inject(DOCUMENT);
+  private readonly sanitizer = inject(DomSanitizer);
+  private readonly cdRef = inject(ChangeDetectorRef);
+  private readonly autoFocus = inject(new HostAttributeToken('autofocus'), {
+    optional: true,
+  });
 
-
-  private onChange: (value: string) => void;
-  private onTouched: () => void;
+  private onChange: (value: string) => void = () => {};
+  private onTouched: () => void = () => {};
 
   modeVisual = true;
   showPlaceholder = false;
@@ -55,61 +81,65 @@ export class AngularEditorComponent implements OnInit, ControlValueAccessor, Aft
   readonly id = input('');
   readonly config = input<AngularEditorConfig>(angularEditorConfig);
   readonly placeholder = input('');
-  readonly tabIndex = input<number | null>(undefined);
+  readonly tabIndex = input<number | null>(null);
 
-  @Output() html: any;
+  readonly html = model<string>('');
 
   readonly textArea = viewChild<ElementRef>('editor');
   readonly editorWrapper = viewChild<ElementRef>('editorWrapper');
   readonly editorToolbar = viewChild<AeToolbarComponent>('editorToolbar');
-  readonly customButtonsTemplateRef = contentChild<TemplateRef<any>>('customButtons');
+  readonly customButtonsTemplateRef =
+    contentChild<TemplateRef<any>>('customButtons');
   executeCommandFn = this.executeCommand.bind(this);
 
   readonly viewMode = output<boolean>();
 
   /** emits `blur` event when focused out from the textarea */
-
-  readonly blurEvent = output<FocusEvent>({ alias: 'blur' });
+   
+  readonly blur = output<FocusEvent>();
 
   /** emits `focus` event when focused in to the textarea */
+   
+  readonly focus = output<FocusEvent>();
 
-  readonly focusEvent = output<FocusEvent>({ alias: 'focus' });
-
-  @HostBinding('attr.tabindex') tabindexAttr: InputSignal<number | null> = input(-1);
-  @HostBinding('attr.tabindex') get tabindex() {
+  readonly tabindexAttr: InputSignal<number | null> = input<number | null>(-1);
+  get tabindex() {
     return this.processedTabIndex();
   }
-  processedTabIndex = signal(null);
+  readonly processedTabIndex = signal<number | null>(null);
 
-  @HostListener('focus')
   onFocus() {
-    this.focus();
+    this.focusEditor();
   }
 
   constructor() {
-    const defaultTabIndex = inject(new HostAttributeToken('tabindex'));
+    const defaultTabIndex = inject(new HostAttributeToken('tabindex'), {
+      optional: true,
+    });
 
     const parsedTabIndex = Number(defaultTabIndex);
-    this.processedTabIndex.set(parsedTabIndex || parsedTabIndex === 0 ? parsedTabIndex : null);
+    this.processedTabIndex.set(
+      parsedTabIndex || parsedTabIndex === 0 ? parsedTabIndex : null,
+    );
   }
 
   ngOnInit() {
     const config = this.config();
-    this.config().toolbarPosition = config.toolbarPosition ? config.toolbarPosition : angularEditorConfig.toolbarPosition;
+    this.config().toolbarPosition = config.toolbarPosition
+      ? config.toolbarPosition
+      : angularEditorConfig.toolbarPosition;
   }
 
   ngAfterViewInit() {
     if (isDefined(this.autoFocus)) {
-      this.focus();
+      this.focusEditor();
     }
   }
 
-
-
-  onPaste(event: ClipboardEvent) {
+  onPaste(event: ClipboardEvent): string | void {
     if (this.config().rawPaste) {
       event.preventDefault();
-      const text = event.clipboardData.getData('text/plain');
+      const text = event.clipboardData?.getData('text/plain') ?? '';
       document.execCommand('insertHTML', false, text);
       return text;
     }
@@ -121,7 +151,7 @@ export class AngularEditorComponent implements OnInit, ControlValueAccessor, Aft
    * @param value
    */
   executeCommand(command: string, value?: string) {
-    this.focus();
+    this.focusEditor();
     if (command === 'focus') {
       return;
     }
@@ -130,10 +160,10 @@ export class AngularEditorComponent implements OnInit, ControlValueAccessor, Aft
     } else if (command !== '') {
       if (command === 'clear') {
         this.editorService.removeSelectedElements(this.getCustomTags());
-        this.onContentChange(this.textArea().nativeElement);
+        this.onContentChange(this.textArea()!.nativeElement);
       } else if (command === 'default') {
         this.editorService.removeSelectedElements('h1,h2,h3,h4,h5,h6,p,pre');
-        this.onContentChange(this.textArea().nativeElement);
+        this.onContentChange(this.textArea()!.nativeElement);
       } else {
         this.editorService.executeCommand(command, value);
       }
@@ -150,7 +180,7 @@ export class AngularEditorComponent implements OnInit, ControlValueAccessor, Aft
       return;
     }
     this.focused = true;
-    this.focusEvent.emit(event);
+    this.focus.emit(event);
     if (!this.touched || !this.changed) {
       this.editorService.executeInNextQueueIteration(() => {
         this.configure();
@@ -173,7 +203,9 @@ export class AngularEditorComponent implements OnInit, ControlValueAccessor, Aft
     /**
      * save selection if focussed out
      */
-    this.editorService.executeInNextQueueIteration(this.editorService.saveSelection);
+    this.editorService.executeInNextQueueIteration(
+      this.editorService.saveSelection,
+    );
 
     if (typeof this.onTouched === 'function') {
       this.onTouched();
@@ -181,8 +213,12 @@ export class AngularEditorComponent implements OnInit, ControlValueAccessor, Aft
 
     if (event.relatedTarget !== null) {
       const parent = (event.relatedTarget as HTMLElement).parentElement;
-      if (!parent.classList.contains('angular-editor-toolbar-set') && !parent.classList.contains('ae-picker')) {
-        this.blurEvent.emit(event);
+      if (
+        parent &&
+        !parent.classList.contains('angular-editor-toolbar-set') &&
+        !parent.classList.contains('ae-picker')
+      ) {
+        this.blur.emit(event);
         this.focused = false;
       }
     }
@@ -191,12 +227,12 @@ export class AngularEditorComponent implements OnInit, ControlValueAccessor, Aft
   /**
    *  focus the text area when the editor is focused
    */
-  focus() {
+  focusEditor() {
     if (this.modeVisual) {
-      this.textArea().nativeElement.focus();
+      this.textArea()?.nativeElement.focus();
     } else {
       const sourceText = this.doc.getElementById('sourceText' + this.id());
-      sourceText.focus();
+      sourceText?.focus();
       this.focused = true;
     }
   }
@@ -205,8 +241,9 @@ export class AngularEditorComponent implements OnInit, ControlValueAccessor, Aft
    * Executed from the content editable section while the input property changes
    * @param element html element from content editable
    */
-  onContentChange(event: Event): void {
-    const element: HTMLElement = event.target as HTMLElement;
+  onContentChange(event: Event | HTMLElement): void {
+    const element: HTMLElement =
+      event instanceof Event ? (event.target as HTMLElement) : event;
 
     let html = '';
     if (this.modeVisual) {
@@ -214,15 +251,20 @@ export class AngularEditorComponent implements OnInit, ControlValueAccessor, Aft
     } else {
       html = element.innerText;
     }
-    if ((!html || html === '<br>')) {
+    if (!html || html === '<br>') {
       html = '';
     }
     if (typeof this.onChange === 'function') {
       const config = this.config();
-      this.onChange(config.sanitize || config.sanitize === undefined ?
-        this.sanitizer.sanitize(SecurityContext.HTML, html) : html);
-      if ((!html) !== this.showPlaceholder) {
-        this.togglePlaceholder(this.showPlaceholder);
+      const sanitizedHtml =
+        config.sanitize || config.sanitize === undefined
+          ? (this.sanitizer.sanitize(SecurityContext.HTML, html) ?? '')
+          : html;
+      this.onChange(sanitizedHtml);
+      this.html.set(sanitizedHtml);
+      const shouldShowPlaceholder = html === '';
+      if (shouldShowPlaceholder !== this.showPlaceholder) {
+        this.togglePlaceholder();
       }
     }
     this.changed = true;
@@ -254,15 +296,16 @@ export class AngularEditorComponent implements OnInit, ControlValueAccessor, Aft
    * @param value value to be executed when there is a change in content editable
    */
   writeValue(value: any): void {
-
-    if ((!value || value === '<br>' || value === '') !== this.showPlaceholder) {
-      this.togglePlaceholder(this.showPlaceholder);
+    const shouldShowPlaceholder = !value || value === '<br>' || value === '';
+    if (shouldShowPlaceholder !== this.showPlaceholder) {
+      this.togglePlaceholder();
     }
 
     if (value === undefined || value === '' || value === '<br>') {
       value = null;
     }
 
+    this.html.set(value ?? '');
     this.refreshView(value);
   }
 
@@ -271,26 +314,27 @@ export class AngularEditorComponent implements OnInit, ControlValueAccessor, Aft
    *
    * @param value html string from the editor
    */
-  refreshView(value: string): void {
-    const normalizedValue = value === null ? '' : value;
-    this.r.setProperty(this.textArea().nativeElement, 'innerHTML', normalizedValue);
-
-    return;
+  refreshView(normalizedValue: string = ''): void {
+    this.r.setProperty(
+      this.textArea()!.nativeElement,
+      'innerHTML',
+      normalizedValue,
+    );
   }
 
   /**
-   * toggles placeholder based on input string
-   *
-   * @param value A HTML string from the editor
+   * toggles placeholder
    */
-  togglePlaceholder(value: boolean): void {
-    if (!value) {
-      this.r.addClass(this.editorWrapper().nativeElement, 'show-placeholder');
-      this.showPlaceholder = true;
-
-    } else {
-      this.r.removeClass(this.editorWrapper().nativeElement, 'show-placeholder');
+  togglePlaceholder(): void {
+    if (this.showPlaceholder) {
+      this.r.removeClass(
+        this.editorWrapper()!.nativeElement,
+        'show-placeholder',
+      );
       this.showPlaceholder = false;
+    } else {
+      this.r.addClass(this.editorWrapper()!.nativeElement, 'show-placeholder');
+      this.showPlaceholder = true;
     }
   }
 
@@ -300,7 +344,7 @@ export class AngularEditorComponent implements OnInit, ControlValueAccessor, Aft
    * @param isDisabled Disabled flag
    */
   setDisabledState(isDisabled: boolean): void {
-    const div = this.textArea().nativeElement;
+    const div = this.textArea()!.nativeElement;
     const action = isDisabled ? 'addClass' : 'removeClass';
     this.r[action](div, 'disabled');
     this.disabled = isDisabled;
@@ -313,7 +357,7 @@ export class AngularEditorComponent implements OnInit, ControlValueAccessor, Aft
    */
   toggleEditorMode(bToSource: boolean) {
     let oContent: any;
-    const editableElement = this.textArea().nativeElement;
+    const editableElement = this.textArea()!.nativeElement;
 
     if (bToSource) {
       oContent = this.r.createText(editableElement.innerHTML);
@@ -334,83 +378,92 @@ export class AngularEditorComponent implements OnInit, ControlValueAccessor, Aft
       this.r.setStyle(oCode, 'background-color', '#fff5b9');
       this.r.setProperty(oCode, 'contentEditable', true);
       this.r.appendChild(oCode, oContent);
-      this.focusInstance = this.r.listen(oCode, 'focus', (event: FocusEvent) => this.onTextAreaFocus(event));
-      this.blurInstance = this.r.listen(oCode, 'blur', (event: FocusEvent) => this.onTextAreaBlur(event));
+      this.focusInstance = this.r.listen(oCode, 'focus', (event: FocusEvent) =>
+        this.onTextAreaFocus(event),
+      );
+      this.blurInstance = this.r.listen(oCode, 'blur', (event: FocusEvent) =>
+        this.onTextAreaBlur(event),
+      );
       this.r.appendChild(oPre, oCode);
       this.r.appendChild(editableElement, oPre);
 
-      // ToDo move to service
-      //this.doc.execCommand('defaultParagraphSeparator', false, 'div');
       this.insertDivParagraph();
 
       this.modeVisual = false;
       this.viewMode.emit(false);
       oCode.focus();
     } else {
-      if (this.doc.querySelectorAll) {
-        this.r.setProperty(editableElement, 'innerHTML', editableElement.innerText);
-      } else {
-        oContent = this.doc.createRange();
-        oContent.selectNodeContents(editableElement.firstChild);
-        this.r.setProperty(editableElement, 'innerHTML', oContent.toString());
-      }
+      this.r.setProperty(
+        editableElement,
+        'innerHTML',
+        editableElement.innerText,
+      );
       this.r.setProperty(editableElement, 'contentEditable', true);
       this.modeVisual = true;
       this.viewMode.emit(true);
       this.onContentChange(editableElement);
       editableElement.focus();
     }
-    this.editorToolbar().setEditorMode(!this.modeVisual);
+    this.editorToolbar()?.setEditorMode(!this.modeVisual);
   }
-private insertDivParagraph(): void {
-  const selection = this.doc.getSelection();
-  if (!selection || selection.rangeCount === 0) {
-    return;
+  private insertDivParagraph(): void {
+    const selection = this.doc.getSelection();
+    if (!selection || selection.rangeCount === 0) {
+      return;
+    }
+
+    const range = selection.getRangeAt(0);
+    const div = this.doc.createElement('div');
+    const br = this.doc.createElement('br'); // Ensure an empty div takes up some space
+
+    div.appendChild(br);
+    range.deleteContents(); // Remove any selected content
+    range.insertNode(div);
+
+    // Move the selection inside the newly created div
+    range.setStart(div, 0);
+    range.setEnd(div, 0);
+    selection.removeAllRanges();
+    selection.addRange(range);
   }
-
-  const range = selection.getRangeAt(0);
-  const div = this.doc.createElement('div');
-  const br = this.doc.createElement('br'); // Ensure an empty div takes up some space
-
-  div.appendChild(br);
-  range.deleteContents(); // Remove any selected content
-  range.insertNode(div);
-
-  // Move the selection inside the newly created div
-  range.setStart(div, 0);
-  range.setEnd(div, 0);
-  selection.removeAllRanges();
-  selection.addRange(range);
-}
   /**
    * toggles editor buttons when cursor moved or positioning
    *
    * Send a node array from the contentEditable of the editor
    */
   exec() {
-    this.editorToolbar().triggerButtons();
+    this.editorToolbar()?.triggerButtons();
 
-    let userSelection;
+    let userSelection: Selection | null = null;
     if (this.doc.getSelection) {
       userSelection = this.doc.getSelection();
-      this.editorService.executeInNextQueueIteration(this.editorService.saveSelection);
+      this.editorService.executeInNextQueueIteration(
+        this.editorService.saveSelection,
+      );
     }
 
-    let a = userSelection.focusNode;
-    const els = [];
-    while (a && a.id !== 'editor') {
+    if (!userSelection) {
+      return;
+    }
+
+    let a: Node | null = userSelection.focusNode;
+    const els: Node[] = [];
+    while (a && (a as HTMLElement).id !== 'editor') {
       els.unshift(a);
       a = a.parentNode;
     }
-    this.editorToolbar().triggerBlocks(els);
+    this.editorToolbar()?.triggerBlocks(els);
   }
 
   private configure() {
-    this.editorService.uploadUrl = this.config().uploadUrl;
-    this.editorService.uploadWithCredentials = this.config().uploadWithCredentials;
+    this.editorService.uploadUrl = this.config().uploadUrl ?? '';
+    this.editorService.uploadWithCredentials =
+      this.config().uploadWithCredentials ?? false;
     const config = this.config();
     if (config.defaultParagraphSeparator) {
-      this.editorService.setDefaultParagraphSeparator(config.defaultParagraphSeparator);
+      this.editorService.setDefaultParagraphSeparator(
+        config.defaultParagraphSeparator,
+      );
     }
     if (config.defaultFontName) {
       this.editorService.setFontName(config.defaultFontName);
@@ -422,7 +475,7 @@ private insertDivParagraph(): void {
 
   getFonts() {
     const config = this.config();
-    const fonts = config.fonts ? config.fonts : angularEditorConfig.fonts;
+    const fonts = config.fonts ?? angularEditorConfig.fonts ?? [];
     return fonts.map((x: Font) => {
       return { label: x.name, value: x.name };
     });
@@ -430,7 +483,7 @@ private insertDivParagraph(): void {
 
   getCustomTags() {
     const tags = ['span'];
-    this.config().customClasses.forEach((x: CustomClass) => {
+    (this.config().customClasses ?? []).forEach((x: CustomClass) => {
       if (x.tag !== undefined) {
         if (!tags.includes(x.tag)) {
           tags.push(x.tag);

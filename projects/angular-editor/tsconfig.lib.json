@@ -1,6 +1,16 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
+    "noImplicitAny": true,
+    "noImplicitReturns": true,
+    "strict": true,
+    "strictNullChecks": true,
+    "strictPropertyInitialization": true,
     "sourceMap": true
+  },
+  "angularCompilerOptions": {
+    "strictInputTypes": true,
+    "strictNullInputTypes": true,
+    "strictTemplates": true
   }
 }

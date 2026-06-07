@@ -11,7 +11,7 @@
   },
   "targets": {
     "build": {
-      "executor": "@angular-devkit/build-angular:ng-packagr",
+      "executor": "@angular/build:ng-packagr",
       "options": {
         "tsConfig": "projects/angular-editor/tsconfig.lib.json",
         "project": "projects/angular-editor/ng-package.json"
@@ -21,16 +21,15 @@
           "tsConfig": "projects/angular-editor/tsconfig.lib.prod.json"
         }
       },
-      "outputs": [
-        "{workspaceRoot}/dist/angular-editor"
-      ]
+      "outputs": ["{workspaceRoot}/dist/angular-editor"]
     },
     "test": {
-      "executor": "@angular-devkit/build-angular:karma",
+      "executor": "@angular/build:unit-test",
       "options": {
-        "main": "projects/angular-editor/src/test.ts",
-        "tsConfig": "projects/angular-editor/tsconfig.spec.json",
-        "karmaConfig": "projects/angular-editor/karma.conf.js"
+        "buildTarget": "angular-editor:build",
+        "runner": "vitest",
+        "coverageReporters": ["lcovonly", "text-summary"],
+        "tsConfig": "projects/angular-editor/tsconfig.spec.json"
       }
     },
     "lint": {
@@ -41,9 +40,7 @@
           "projects/angular-editor/**/*.html"
         ]
       },
-      "outputs": [
-        "{options.outputFile}"
-      ]
+      "outputs": ["{options.outputFile}"]
     }
   }
 }

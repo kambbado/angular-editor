@@ -2,6 +2,7 @@
   "$schema": "http://json.schemastore.org/tsconfig",
   "compileOnSave": false,
   "compilerOptions": {
+    "strict": true,
     "composite": false,
     "noFallthroughCasesInSwitch": true,
     "pretty": true,
@@ -10,7 +11,8 @@
     "outDir": "./dist/out-tsc",
     "sourceMap": true,
     "declaration": false,
-    "moduleResolution": "node",
+    "ignoreDeprecations": "6.0",
+    "moduleResolution": "bundler",
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "importHelpers": true,
@@ -18,33 +20,18 @@
     "skipLibCheck": true,
     "target": "es2022",
     "module": "es2022",
-    "typeRoots": [
-      "node_modules/@types"
-    ],
-    "lib": [
-      "es2022",
-      "dom"
-    ],
+    "typeRoots": ["node_modules/@types"],
+    "lib": ["es2022", "dom"],
     "resolveJsonModule": true,
     "preserveConstEnums": true,
     "incremental": true,
     "paths": {
-      "angular-editor": [
-        "./projects/angular-editor/src/public-api.ts"
-      ]
+      "angular-editor": ["./projects/angular-editor/src/public-api.ts"]
     }
   },
-  "include": [
-    "src",
-    "projects"
-  ],
-  "exclude": [
-    "**/*.spec.ts",
-    "./node_modules/*",
-    "dist"
-  ],
+  "include": ["src", "projects"],
+  "exclude": ["**/*.spec.ts", "./node_modules/*", "dist"],
   "angularCompilerOptions": {
-    "disableTypeScriptVersionCheck": true,
     "annotateForClosureCompiler": true,
     "strictTemplates": true,
     "strictInputTypes": true,
@@ -63,13 +50,6 @@
     "strictInjectionParameters": true,
     "enableI18nLegacyMessageIdFormat": false,
     "strictInputAccessModifiers": true,
-    "extendedDiagnostics": {
-      "checks": {
-        "invalidBananaInBox": "error",
-        "nullishCoalescingNotNullable": "warning"
-      },
-      "defaultCategory": "error"
-    },
     "esModuleInterop": true
   },
   "references": [

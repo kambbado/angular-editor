@@ -1,32 +1,56 @@
 import { DOCUMENT } from '@angular/common';
 import { HttpEvent, HttpResponse } from '@angular/common/http';
-import { ChangeDetectionStrategy, Component, ElementRef, Input, Renderer2, inject, output, viewChild, input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  Renderer2,
+  effect,
+  inject,
+  input,
+  output,
+  viewChild,
+} from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { Observable } from 'rxjs';
-import { SelectOption } from '../ae-select/ae-select.component';
-import { AngularEditorService, UploadResponse } from '../angular-editor.service';
+import { AeButtonComponent } from '../ae-button/ae-button.component';
+import {
+  AeSelectComponent,
+  SelectOption,
+} from '../ae-select/ae-select.component';
+import { AeToolbarSetComponent } from '../ae-toolbar-set/ae-toolbar-set.component';
+import {
+  AngularEditorService,
+  UploadResponse,
+} from '../angular-editor.service';
 import { CustomClass } from '../config';
 
 @Component({
   selector: 'angular-editor-toolbar, ae-toolbar, div[aeToolbar]',
   templateUrl: './ae-toolbar.component.html',
   styleUrls: ['./ae-toolbar.component.scss'],
-  standalone: false,
+  imports: [
+    FormsModule,
+    AeButtonComponent,
+    AeSelectComponent,
+    AeToolbarSetComponent,
+  ],
+  standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-
 export class AeToolbarComponent {
-  private r = inject(Renderer2);
-  private editorService = inject(AngularEditorService);
-  private er = inject(ElementRef);
-  private doc = inject(DOCUMENT);
+  private readonly r = inject(Renderer2);
+  private readonly editorService = inject(AngularEditorService);
+  private readonly er = inject(ElementRef);
+  private readonly doc = inject(DOCUMENT);
 
   htmlMode = false;
   linkSelected = false;
   block = 'default';
   fontName = 'Times New Roman';
   fontSize = '3';
-  foreColour;
-  backColor;
+  foreColour: string | null = null;
+  backColor: string | null = null;
 
   headings: SelectOption[] = [
     {
@@ -59,16 +83,16 @@ export class AeToolbarComponent {
     },
     {
       label: 'Predefined',
-      value: 'pre'
+      value: 'pre',
     },
     {
       label: 'Standard',
-      value: 'div'
+      value: 'div',
     },
     {
       label: 'default',
-      value: 'default'
-    }
+      value: 'default',
+    },
   ];
 
   fontSizes: SelectOption[] = [
@@ -99,62 +123,78 @@ export class AeToolbarComponent {
     {
       label: '7',
       value: '7',
-    }
+    },
   ];
 
   customClassId = '-1';
 
-  _customClasses: CustomClass[];
+  _customClasses: CustomClass[] = [];
   customClassList: SelectOption[] = [{ label: '', value: '' }];
   // uploadUrl: string;
 
-  tagMap = {
+  tagMap: Record<string, string> = {
     BLOCKQUOTE: 'indent',
-    A: 'link'
+    A: 'link',
   };
 
   select = ['H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'P', 'PRE', 'DIV'];
 
-  buttons = ['bold', 'italic', 'underline', 'strikeThrough', 'subscript', 'superscript', 'justifyLeft', 'justifyCenter',
-    'justifyRight', 'justifyFull', 'indent', 'outdent', 'insertUnorderedList', 'insertOrderedList', 'link'];
+  buttons = [
+    'bold',
+    'italic',
+    'underline',
+    'strikeThrough',
+    'subscript',
+    'superscript',
+    'justifyLeft',
+    'justifyCenter',
+    'justifyRight',
+    'justifyFull',
+    'indent',
+    'outdent',
+    'insertUnorderedList',
+    'insertOrderedList',
+    'link',
+  ];
 
-  readonly id = input<string>(undefined);
-  readonly uploadUrl = input<string>(undefined);
-  readonly upload = input<(file: File) => Observable<HttpEvent<UploadResponse>>>(undefined);
-  readonly showToolbar = input<boolean>(undefined);
+  readonly id = input<string | undefined>(undefined);
+  readonly uploadUrl = input<string | undefined>(undefined);
+  readonly upload = input<
+    ((file: File) => Observable<HttpEvent<UploadResponse>>) | undefined
+  >(undefined);
+  readonly showToolbar = input<boolean | undefined>(undefined);
   readonly fonts = input<SelectOption[]>([{ label: '', value: '' }]);
+  readonly customClasses = input<CustomClass[] | undefined>(undefined);
+  readonly defaultFontName = input<string | undefined>(undefined);
+  readonly defaultFontSize = input<string | undefined>(undefined);
 
-  @Input()
-  set customClasses(classes: CustomClass[]) {
+  private readonly syncSignalInputs = effect(() => {
+    const classes = this.customClasses();
     if (classes) {
       this._customClasses = classes;
-      this.customClassList = this._customClasses.map((x: CustomClass, i: number) => ({ label: x.name, value: i.toString() }));
+      this.customClassList = this._customClasses.map(
+        (x: CustomClass, i: number) => ({ label: x.name, value: i.toString() }),
+      );
       this.customClassList.unshift({ label: 'Clear Class', value: '-1' });
     }
-  }
-
-  @Input()
-  set defaultFontName(value: string) {
-    if (value) {
-      this.fontName = value;
+    const fontName = this.defaultFontName();
+    if (fontName) {
+      this.fontName = fontName;
     }
-  }
-
-  @Input()
-  set defaultFontSize(value: string) {
-    if (value) {
-      this.fontSize = value;
+    const fontSize = this.defaultFontSize();
+    if (fontSize) {
+      this.fontSize = fontSize;
     }
-  }
+  });
 
-  readonly hiddenButtons = input<string[][]>(undefined);
+  readonly hiddenButtons = input<string[][] | undefined>(undefined);
 
   readonly execute = output<string>();
 
   readonly myInputFile = viewChild<ElementRef>('fileInput');
 
   public get isLinkButtonDisabled(): boolean {
-    return this.htmlMode || !Boolean(this.editorService.selectedText);
+    return this.htmlMode || !this.editorService.selectedText;
   }
 
   /**
@@ -189,11 +229,11 @@ export class AeToolbarComponent {
     if (!this.showToolbar()) {
       return;
     }
-    this.linkSelected = nodes.findIndex((x: Node) => x.nodeName === 'A') > -1;
+    this.linkSelected = nodes.some((x: Node) => x.nodeName === 'A');
     let found = false;
     this.select.forEach((y: string) => {
       const node = nodes.find((x: Node) => x.nodeName === y);
-      if (node !== undefined && y === node.nodeName) {
+      if (y === node?.nodeName) {
         if (found === false) {
           this.block = node.nodeName.toLowerCase();
           found = true;
@@ -210,6 +250,7 @@ export class AeToolbarComponent {
           if (x instanceof Element) {
             return x.className === y.class;
           }
+          return false;
         });
         if (node !== undefined) {
           if (found === false) {
@@ -222,10 +263,12 @@ export class AeToolbarComponent {
       });
     }
 
-    Object.keys(this.tagMap).map((e: string) => {
-      const elementById = this.doc.getElementById(this.tagMap[e] + '-' + this.id());
+    Object.keys(this.tagMap).forEach((e: string) => {
+      const elementById = this.doc.getElementById(
+        this.tagMap[e] + '-' + this.id(),
+      );
       const node = nodes.find((x: Node) => x.nodeName === e);
-      if (node !== undefined && e === node.nodeName) {
+      if (e === node?.nodeName) {
         this.r.addClass(elementById, 'active');
       } else {
         this.r.removeClass(elementById, 'active');
@@ -233,9 +276,9 @@ export class AeToolbarComponent {
     });
 
     this.foreColour = this.getForeColor();
-    this.fontSize = this.getFontSize();
-    this.fontName = this.getFontName()?.replace(/"/g, '');
-    this.backColor = this.getBackColor;
+    this.fontSize = this.getFontSize() ?? this.fontSize;
+    this.fontName = this.getFontName()?.replaceAll('"', '') ?? this.fontName;
+    this.backColor = this.getBackColor();
   }
 
   getFontName(): string | null {
@@ -248,10 +291,12 @@ export class AeToolbarComponent {
     const startNode = range.startContainer;
 
     // Find the closest element node in the selection
-    let element = startNode instanceof Element ? startNode : startNode.parentElement;
+    let element =
+      startNode instanceof Element ? startNode : startNode.parentElement;
 
     while (element) {
-      const fontName = this.doc.defaultView?.getComputedStyle(element).fontFamily;
+      const fontName =
+        this.doc.defaultView?.getComputedStyle(element).fontFamily;
       if (fontName) {
         return fontName;
       }
@@ -270,7 +315,8 @@ export class AeToolbarComponent {
     const startNode = range.startContainer;
 
     // Find the closest element node in the selection
-    let element = startNode instanceof Element ? startNode : startNode.parentElement;
+    let element =
+      startNode instanceof Element ? startNode : startNode.parentElement;
 
     while (element) {
       const fontSize = this.doc.defaultView?.getComputedStyle(element).fontSize;
@@ -291,10 +337,12 @@ export class AeToolbarComponent {
     const range = selection.getRangeAt(0);
     const startNode = range.startContainer;
     // Find the closest element node in the selection
-    let element = startNode instanceof Element ? startNode : startNode.parentElement;
+    let element =
+      startNode instanceof Element ? startNode : startNode.parentElement;
 
     while (element) {
-      const backColor = this.doc.defaultView?.getComputedStyle(element).backgroundColor;
+      const backColor =
+        this.doc.defaultView?.getComputedStyle(element).backgroundColor;
       if (backColor) {
         return backColor;
       }
@@ -314,7 +362,8 @@ export class AeToolbarComponent {
     const startNode = range.startContainer;
 
     // Find the closest element node in the selection
-    let element = startNode instanceof Element ? startNode : startNode.parentElement;
+    let element =
+      startNode instanceof Element ? startNode : startNode.parentElement;
 
     while (element) {
       const color = this.doc.defaultView?.getComputedStyle(element).color;
@@ -330,17 +379,21 @@ export class AeToolbarComponent {
    * insert URL link
    */
   insertUrl() {
-    let url = 'https:\/\/';
+    let url = 'https://';
     const selection = this.editorService.savedSelection;
-    if (selection && selection.commonAncestorContainer.parentElement.nodeName === 'A') {
-      const parent = selection.commonAncestorContainer.parentElement as HTMLAnchorElement;
+    if (
+      selection &&
+      selection.commonAncestorContainer.parentElement?.nodeName === 'A'
+    ) {
+      const parent = selection.commonAncestorContainer
+        .parentElement as HTMLAnchorElement;
       if (parent.href !== '') {
         url = parent.href;
       }
     }
-    url = prompt('Insert URL link', url);
-    if (url && url !== '' && url !== 'https://') {
-      this.editorService.createLink(url);
+    const promptUrl = prompt('Insert URL link', url);
+    if (promptUrl && promptUrl !== '' && promptUrl !== 'https://') {
+      this.editorService.createLink(promptUrl);
     }
   }
 
@@ -384,7 +437,9 @@ export class AeToolbarComponent {
    * @param m boolean
    */
   setEditorMode(m: boolean) {
-    const toggleEditorModeButton = this.doc.getElementById('toggleEditorMode' + '-' + this.id());
+    const toggleEditorModeButton = this.doc.getElementById(
+      'toggleEditorMode' + '-' + this.id(),
+    );
     if (m) {
       this.r.addClass(toggleEditorModeButton, 'active');
     } else {
@@ -403,14 +458,28 @@ export class AeToolbarComponent {
       if (selectedFile.type.includes('image/')) {
         const upload = this.upload();
         if (upload) {
-          upload(selectedFile).subscribe((response: HttpResponse<UploadResponse>) => this.watchUploadImage(response, event));
+          upload(selectedFile).subscribe(
+            (response: HttpEvent<UploadResponse>) => {
+              if (response instanceof HttpResponse) {
+                this.watchUploadImage(response, event);
+              }
+            },
+          );
         } else if (this.uploadUrl()) {
-          this.editorService.uploadImage(selectedFile).subscribe((response: HttpResponse<UploadResponse>) => this.watchUploadImage(response, event));
+          this.editorService
+            .uploadImage(selectedFile)
+            .subscribe((response: HttpEvent<UploadResponse>) => {
+              if (response instanceof HttpResponse) {
+                this.watchUploadImage(response, event);
+              }
+            });
         } else {
           const reader = new FileReader();
           reader.onload = (e: ProgressEvent) => {
             const fr = e.currentTarget as FileReader;
-            this.editorService.insertImage(fr.result.toString());
+            if (typeof fr.result === 'string') {
+              this.editorService.insertImage(fr.result);
+            }
           };
           reader.readAsDataURL(selectedFile);
         }
@@ -418,10 +487,16 @@ export class AeToolbarComponent {
     }
   }
 
-  watchUploadImage(response: HttpResponse<{ imageUrl: string }>, event: Event) {
-    const { imageUrl } = response.body;
+  watchUploadImage(
+    response: HttpResponse<{ imageUrl: string }>,
+    event: Event,
+  ): void {
+    const imageUrl = response.body?.imageUrl;
+    if (!imageUrl) {
+      return;
+    }
     this.editorService.insertImage(imageUrl);
-    (event.target as HTMLInputElement).value = null;
+    (event.target as HTMLInputElement).value = '';
   }
 
   /**
@@ -440,12 +515,12 @@ export class AeToolbarComponent {
       return false;
     }
     const hiddenButtons = this.hiddenButtons();
-    if (!(hiddenButtons instanceof Array)) {
+    if (!Array.isArray(hiddenButtons)) {
       return false;
     }
-    let result: any;
+    let result: string | undefined;
     for (const arr of hiddenButtons) {
-      if (arr instanceof Array) {
+      if (Array.isArray(arr)) {
         result = arr.find((item: string) => item === name);
       }
       if (result) {

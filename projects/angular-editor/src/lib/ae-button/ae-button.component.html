@@ -1,6 +1,9 @@
 @if (iconName()) {
   <svg>
-    <use [attr.href]="'assets/ae-icons/icons.svg#' + iconName()" [attr.xlink:href]="'assets/ae-icons/icons.svg#' + iconName()"></use>
+    <use
+      [attr.href]="'assets/ae-icons/icons.svg#' + iconName()"
+      [attr.xlink:href]="'assets/ae-icons/icons.svg#' + iconName()"
+    ></use>
   </svg>
 } @else {
   <ng-content />

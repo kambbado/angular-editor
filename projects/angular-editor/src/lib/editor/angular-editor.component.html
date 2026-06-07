@@ -4,15 +4,17 @@
   [style.width]="config().width"
   [style.minWidth]="config().minWidth"
   [ngClass]="{
-     'bottom': config().toolbarPosition === 'bottom'
-     }"
+    bottom: config().toolbarPosition === 'bottom',
+  }"
 >
   <angular-editor-toolbar
     #editorToolbar
     [id]="id()"
     [uploadUrl]="config().uploadUrl"
     [upload]="config().upload"
-    [showToolbar]="config().showToolbar !== undefined ? config().showToolbar : true"
+    [showToolbar]="
+      config().showToolbar !== undefined ? config().showToolbar : true
+    "
     [fonts]="getFonts()"
     [customClasses]="config().customClasses"
     [defaultFontName]="config().defaultFontName"
@@ -22,15 +24,12 @@
   >
     <ng-container
       [ngTemplateOutlet]="customButtonsTemplateRef()"
-      [ngTemplateOutletContext]="{ executeCommandFn: this.executeCommandFn}"
+      [ngTemplateOutletContext]="{ executeCommandFn: this.executeCommandFn }"
     >
     </ng-container>
   </angular-editor-toolbar>
 
-  <div
-    class="angular-editor-wrapper"
-    #editorWrapper
-  >
+  <div class="angular-editor-wrapper" #editorWrapper>
     <div
       #editor
       class="angular-editor-textarea"
@@ -41,7 +40,7 @@
       [style.height]="config().height"
       [style.minHeight]="config().minHeight"
       [style.maxHeight]="config().maxHeight"
-      [style.outline]="config().outline === false ? 'none': undefined"
+      [style.outline]="config().outline === false ? 'none' : undefined"
       (input)="onContentChange($event)"
       (focus)="onTextAreaFocus($event)"
       (blur)="onTextAreaBlur($event)"
@@ -49,8 +48,9 @@
       (keyup)="exec()"
       (mouseout)="onTextAreaMouseOut($event)"
       (paste)="onPaste($event)"
-    >
-    </div>
-    <span class="angular-editor-placeholder">{{ placeholder() || config()['placeholder'] }}</span>
+    ></div>
+    <span class="angular-editor-placeholder">{{
+      placeholder() || config()["placeholder"]
+    }}</span>
   </div>
 </div>

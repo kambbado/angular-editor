@@ -6,17 +6,14 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
   styleUrls: ['./ae-button.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
-    'class': 'angular-editor-button',
-    '[tabIndex]': '-1',
-    '[type]': '"button"',
+    class: 'angular-editor-button',
+    '[attr.tabindex]': '"-1"',
+    '[attr.type]': '"button"',
   },
-  standalone: false
+  standalone: true,
 })
 export class AeButtonComponent {
-
   readonly iconName = input('');
 
-  constructor() {
-  }
-
+  constructor() {}
 }
