@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, NgZone } from '@angular/core';
 import { HttpClient, HttpEvent } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { DOCUMENT } from '@angular/common';
@@ -12,6 +12,7 @@ export interface UploadResponse {
 export class AngularEditorService {
   private readonly http = inject(HttpClient);
   private readonly doc = inject(DOCUMENT);
+  private readonly ngZone = inject(NgZone);
 
   savedSelection: Range | null = null;
   selectedText = '';
@@ -136,7 +137,9 @@ export class AngularEditorService {
     callbackFn: (...args: unknown[]) => unknown,
     timeout: number = 100,
   ): void {
-    setTimeout(callbackFn, timeout);
+    this.ngZone.runOutsideAngular(() => {
+      setTimeout(callbackFn, timeout);
+    });
   }
 
   /** check any selection is made or not */

@@ -36,10 +36,8 @@ describe('AeSelectComponent', () => {
   });
 
   it('should be visible after initialized', () => {
-    const hide = vi.spyOn(component, 'hide');
     component.ngOnInit();
-    expect(component.hidden).toBe('inline-block');
-    expect(hide).not.toHaveBeenCalled();
+    expect(component.display()).toBe('inline-block');
   });
 
   it('should select first option after initialized', () => {
@@ -48,17 +46,12 @@ describe('AeSelectComponent', () => {
     expect(component.selectedOption).toBe(testOptions[0]);
   });
 
-  it('should call hide method after initialized when passed isHidden: true', () => {
-    const hide = vi.spyOn(component, 'hide');
+  it('should be hidden when passed hidden: true', () => {
     fixture.componentRef.setInput('hidden', true);
     component.ngOnInit();
-    expect(hide).toHaveBeenCalled();
+    expect(component.display()).toBe('none');
   });
 
-  it('should be hidden after called hide method', () => {
-    component.hide();
-    expect(component.hidden).toBe('none');
-  });
 
   it('should render options', () => {
     fixture.componentRef.setInput('options', testOptions);

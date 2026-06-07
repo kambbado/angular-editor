@@ -216,11 +216,11 @@
         [hidden]="isButtonHidden('backgroundColor')"
       ></button>
     </div>
-    @if (_customClasses && _customClasses.length > 0) {
+    @if (customClasses() && customClasses()!.length > 0) {
       <div aeToolbarSet>
         <ae-select
           class="select-custom-style"
-          [options]="customClassList"
+          [options]="customClassList()"
           [(ngModel)]="customClassId"
           (change)="setCustomClass(customClassId)"
           [disabled]="htmlMode"

@@ -41,12 +41,8 @@
       [style.minHeight]="config().minHeight"
       [style.maxHeight]="config().maxHeight"
       [style.outline]="config().outline === false ? 'none' : undefined"
-      (input)="onContentChange($event)"
       (focus)="onTextAreaFocus($event)"
       (blur)="onTextAreaBlur($event)"
-      (click)="exec()"
-      (keyup)="exec()"
-      (mouseout)="onTextAreaMouseOut($event)"
       (paste)="onPaste($event)"
     ></div>
     <span class="angular-editor-placeholder">{{

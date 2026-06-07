@@ -5,9 +5,10 @@ import {
   Component,
   ElementRef,
   Renderer2,
-  effect,
+  computed,
   inject,
   input,
+  OnInit,
   output,
   viewChild,
 } from '@angular/core';
@@ -38,7 +39,7 @@ import { CustomClass } from '../config';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AeToolbarComponent {
+export class AeToolbarComponent implements OnInit {
   private readonly r = inject(Renderer2);
   private readonly editorService = inject(AngularEditorService);
   private readonly er = inject(ElementRef);
@@ -128,8 +129,16 @@ export class AeToolbarComponent {
 
   customClassId = '-1';
 
-  _customClasses: CustomClass[] = [];
-  customClassList: SelectOption[] = [{ label: '', value: '' }];
+  readonly customClassList = computed(() => {
+    const classes = this.customClasses() ?? [];
+    const list: SelectOption[] = classes.map((x, i) => ({
+      label: x.name,
+      value: i.toString(),
+    }));
+    list.unshift({ label: 'Clear Class', value: '-1' });
+    return list;
+  });
+
   // uploadUrl: string;
 
   tagMap: Record<string, string> = {
@@ -168,15 +177,7 @@ export class AeToolbarComponent {
   readonly defaultFontName = input<string | undefined>(undefined);
   readonly defaultFontSize = input<string | undefined>(undefined);
 
-  private readonly syncSignalInputs = effect(() => {
-    const classes = this.customClasses();
-    if (classes) {
-      this._customClasses = classes;
-      this.customClassList = this._customClasses.map(
-        (x: CustomClass, i: number) => ({ label: x.name, value: i.toString() }),
-      );
-      this.customClassList.unshift({ label: 'Clear Class', value: '-1' });
-    }
+  ngOnInit(): void {
     const fontName = this.defaultFontName();
     if (fontName) {
       this.fontName = fontName;
@@ -185,7 +186,7 @@ export class AeToolbarComponent {
     if (fontSize) {
       this.fontSize = fontSize;
     }
-  });
+  }
 
   readonly hiddenButtons = input<string[][] | undefined>(undefined);
 
@@ -244,8 +245,9 @@ export class AeToolbarComponent {
     });
 
     found = false;
-    if (this._customClasses) {
-      this._customClasses.forEach((y: CustomClass, index: number) => {
+    const customClasses = this.customClasses() ?? [];
+    if (customClasses.length > 0) {
+      customClasses.forEach((y: CustomClass, index: number) => {
         const node = nodes.find((x: Node) => {
           if (x instanceof Element) {
             return x.className === y.class;
@@ -506,7 +508,10 @@ export class AeToolbarComponent {
     if (classId === '-1') {
       this.execute.emit('clear');
     } else {
-      this.editorService.createCustomClass(this._customClasses[+classId]);
+      const classes = this.customClasses();
+      if (classes) {
+        this.editorService.createCustomClass(classes[+classId]);
+      }
     }
   }
 

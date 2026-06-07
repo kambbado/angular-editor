@@ -12,6 +12,7 @@ import {
   input,
   InputSignal,
   model,
+  NgZone,
   OnDestroy,
   OnInit,
   output,
@@ -23,6 +24,8 @@ import {
 } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { DomSanitizer } from '@angular/platform-browser';
+import { Subject } from 'rxjs';
+import { debounceTime, takeUntil } from 'rxjs/operators';
 import { AeToolbarComponent } from '../ae-toolbar/ae-toolbar.component';
 import { AngularEditorService } from '../angular-editor.service';
 import {
@@ -61,6 +64,7 @@ export class AngularEditorComponent
   private readonly doc = inject(DOCUMENT);
   private readonly sanitizer = inject(DomSanitizer);
   private readonly cdRef = inject(ChangeDetectorRef);
+  private readonly ngZone = inject(NgZone);
   private readonly autoFocus = inject(new HostAttributeToken('autofocus'), {
     optional: true,
   });
@@ -74,6 +78,15 @@ export class AngularEditorComponent
   focused = false;
   touched = false;
   changed = false;
+
+  private readonly destroy$ = new Subject<void>();
+  private readonly execSubject = new Subject<void>();
+  private readonly contentChangeSubject = new Subject<HTMLElement>();
+
+  private unlistenMouseOut?: () => void;
+  private unlistenKeyUp?: () => void;
+  private unlistenClick?: () => void;
+  private unlistenInput?: () => void;
 
   focusInstance: any;
   blurInstance: any;
@@ -128,12 +141,56 @@ export class AngularEditorComponent
     this.config().toolbarPosition = config.toolbarPosition
       ? config.toolbarPosition
       : angularEditorConfig.toolbarPosition;
+
+    if (config.sanitize === false) {
+      console.warn(
+        'Angular Editor: XSS Security Warning! "sanitize" is set to false. The application is responsible for sanitizing all HTML inputs.',
+      );
+    }
+
+    this.execSubject.pipe(
+      debounceTime(50),
+      takeUntil(this.destroy$)
+    ).subscribe(() => {
+      this.ngZone.run(() => {
+        this.exec();
+      });
+    });
+
+    this.contentChangeSubject.pipe(
+      debounceTime(50),
+      takeUntil(this.destroy$)
+    ).subscribe((element: HTMLElement) => {
+      this.ngZone.run(() => {
+        this.onContentChange(element);
+      });
+    });
   }
 
   ngAfterViewInit() {
     if (isDefined(this.autoFocus)) {
       this.focusEditor();
     }
+
+    const textAreaEl = this.textArea()!.nativeElement;
+
+    this.ngZone.runOutsideAngular(() => {
+      this.unlistenMouseOut = this.r.listen(textAreaEl, 'mouseout', (e: MouseEvent) => {
+        this.onTextAreaMouseOut(e);
+      });
+
+      this.unlistenKeyUp = this.r.listen(textAreaEl, 'keyup', () => {
+        this.execSubject.next();
+      });
+
+      this.unlistenClick = this.r.listen(textAreaEl, 'click', () => {
+        this.execSubject.next();
+      });
+
+      this.unlistenInput = this.r.listen(textAreaEl, 'input', (e: Event) => {
+        this.contentChangeSubject.next(e.target as HTMLElement);
+      });
+    });
   }
 
   onPaste(event: ClipboardEvent): string | void {
@@ -305,8 +362,14 @@ export class AngularEditorComponent
       value = null;
     }
 
-    this.html.set(value ?? '');
-    this.refreshView(value);
+    let html = value ?? '';
+    const config = this.config();
+    if (config.sanitize || config.sanitize === undefined) {
+      html = this.sanitizer.sanitize(SecurityContext.HTML, html) ?? '';
+    }
+
+    this.html.set(html);
+    this.refreshView(html);
   }
 
   /**
@@ -393,10 +456,16 @@ export class AngularEditorComponent
       this.viewMode.emit(false);
       oCode.focus();
     } else {
+      let html = editableElement.innerText;
+      const config = this.config();
+      if (config.sanitize || config.sanitize === undefined) {
+        html = this.sanitizer.sanitize(SecurityContext.HTML, html) ?? '';
+      }
+
       this.r.setProperty(
         editableElement,
         'innerHTML',
-        editableElement.innerText,
+        html,
       );
       this.r.setProperty(editableElement, 'contentEditable', true);
       this.modeVisual = true;
@@ -494,6 +563,14 @@ export class AngularEditorComponent
   }
 
   ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
+
+    if (this.unlistenMouseOut) this.unlistenMouseOut();
+    if (this.unlistenKeyUp) this.unlistenKeyUp();
+    if (this.unlistenClick) this.unlistenClick();
+    if (this.unlistenInput) this.unlistenInput();
+
     if (this.blurInstance) {
       this.blurInstance();
     }

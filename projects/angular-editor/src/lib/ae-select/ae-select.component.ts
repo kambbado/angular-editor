@@ -9,6 +9,7 @@ import {
   Renderer2,
   viewChild,
   input,
+  computed,
 } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { isDefined } from '../utils';
@@ -24,7 +25,7 @@ export interface SelectOption {
   styleUrls: ['./ae-select.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
-    '[style.display]': 'display',
+    '[style.display]': 'display()',
     '(document:click)': 'onClick($event)',
     '(keydown)': 'handleKeyDown($event)',
   },
@@ -61,7 +62,10 @@ export class AeSelectComponent implements OnInit, ControlValueAccessor {
     return this.selectedOption?.value ?? '';
   }
 
-  display = 'inline-block';
+  readonly display = computed(() => {
+    const isHidden = this.hidden();
+    return isDefined(isHidden) && isHidden ? 'none' : 'inline-block';
+  });
 
    
   readonly change = output<string>();
@@ -70,14 +74,6 @@ export class AeSelectComponent implements OnInit, ControlValueAccessor {
 
   ngOnInit() {
     this.selectedOption = this.options()[0];
-    const isHidden = this.hidden();
-    if (isDefined(isHidden) && isHidden) {
-      this.hide();
-    }
-  }
-
-  hide() {
-    this.display = 'none';
   }
 
   optionSelect(option: SelectOption, event: MouseEvent) {
