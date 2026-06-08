@@ -1,6 +1,6 @@
 {
   "name": "@ramp/angular-editor",
-  "version": "3.0.0-beta.12",
+  "version": "3.0.0-beta.16",
   "scripts": {
     "ng": "ng",
     "start": "nx serve angular-editor-app",
@@ -18,7 +18,7 @@
     "build:lib:prod": "cross-env CI=true NX_NO_CLOUD=true nx build angular-editor --configuration production",
     "build-prod:lib": "npm run build:lib:prod",
     "build:all": "cross-env CI=true NX_NO_CLOUD=true nx run-many -t build -p angular-editor,angular-editor-app",
-    "publish:lib": "npm run build-prod:lib && npm run copy:readme && npm run copy:changelog && npm run copy:license && npm publish ./dist/angular-editor --tag next --registry=https://pkgs.dev.azure.com/modramp/_packaging/npmjs-library-202503/npm/registry/",
+    "publish:lib": "npm run build-prod:lib && npm run copy:readme && npm run copy:changelog && npm run copy:license && npm publish ./dist/angular-editor --tag latest --registry=https://pkgs.dev.azure.com/modramp/_packaging/npmjs-library-202503/npm/registry/",
     "copy:readme": "cpx README.md dist/angular-editor",
     "copy:changelog": "cpx CHANGELOG.md dist/angular-editor",
     "copy:license": "cpx LICENSE dist/angular-editor",
