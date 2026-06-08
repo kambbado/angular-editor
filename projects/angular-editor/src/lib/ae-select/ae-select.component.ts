@@ -76,8 +76,8 @@ export class AeSelectComponent implements OnInit, ControlValueAccessor {
     this.selectedOption = this.options()[0];
   }
 
-  optionSelect(option: SelectOption, event: MouseEvent) {
-    if (event.buttons !== 1) {
+  optionSelect(option: SelectOption, event: Event) {
+    if (event instanceof MouseEvent && event.buttons !== 1) {
       return;
     }
     event.preventDefault();
@@ -90,7 +90,7 @@ export class AeSelectComponent implements OnInit, ControlValueAccessor {
     this.opened = false;
   }
 
-  toggleOpen(event: MouseEvent) {
+  toggleOpen(event: Event) {
     if (this.disabled) {
       return;
     }

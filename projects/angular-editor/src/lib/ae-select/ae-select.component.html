@@ -3,9 +3,10 @@
     #labelButton
     tabindex="-1"
     type="button"
-    role="button"
     class="ae-picker-label"
     (click)="toggleOpen($event)"
+    (keydown.enter)="toggleOpen($event)"
+    (keydown.space)="toggleOpen($event)"
   >
     {{ label }}
     <svg>
@@ -16,13 +17,14 @@
     </svg>
   </button>
   <span class="ae-picker-options">
-    @for (item of options(); track item; let i = $index) {
+    @for (item of options(); track item.value; let i = $index) {
       <span
         type="button"
-        role="button"
         class="ae-picker-item"
         [class]="{ selected: item.value === value, focused: i === optionId }"
         (mousedown)="optionSelect(item, $event)"
+        (keydown.enter)="optionSelect(item, $event)"
+        (keydown.space)="optionSelect(item, $event)"
       >
         {{ item.label }}
       </span>
